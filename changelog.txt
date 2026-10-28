@@ -1,4 +1,9 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.2.5
+Date: 2026-10-28
+  Bugfixes:
+    - Standing next to a project with a personal roboport made growth wait for materials counted in your inventory instead of in your base ("the network can spare 1" while the base held plenty). Every roboport network reaching the next copy now counts, together; a personal roboport counts only where none reaches.
+---------------------------------------------------------------------------------------------------
 Version: 0.2.4
 Date: 2026-10-28
   Bugfixes:

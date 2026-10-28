@@ -63,6 +63,7 @@ local CASES = {
   require("cases.creeper_race"),
   require("cases.creeper_one"),
   require("cases.vanish"),
+  require("cases.personal"),
 }
 
 local START_TICK = 60

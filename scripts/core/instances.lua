@@ -78,11 +78,11 @@ function instances.progress(instance, tick)
   if instance.state == STATE.stalled then instances.set_state(instance, STATE.building) end
 end
 
--- No item in the supply (a network, or a platform's hub) could place this
--- ghost.
-local function lacks(supply, ghost)
+-- No item in the supplies (networks, or a platform's hub) could place
+-- this ghost.
+local function lacks(supplies, ghost)
   for _, item in pairs(ghost.ghost_prototype.items_to_place_this or {}) do
-    if supply.get_item_count({ name = item.name, quality = ghost.quality.name }) > 0 then return false end
+    if gates.count(supplies, { name = item.name, quality = ghost.quality.name }) > 0 then return false end
   end
   return true
 end
@@ -93,10 +93,10 @@ end
 local function stall_reason(instance)
   local surface, force = game.surfaces[instance.surface_index], game.forces[instance.force_index]
   if not (surface and force) then return REASON.no_progress end
-  local supply = gates.supply_at(surface, force, geometry.box_center(instance.footprint))
-  if not supply then return REASON.no_network end
+  local supplies = gates.supplies_at(surface, force, geometry.box_center(instance.footprint))
+  if #supplies == 0 then return REASON.no_network end
   local short = false
-  ghosts.each(surface, instance, function(ghost) short = short or lacks(supply, ghost) end)
+  ghosts.each(surface, instance, function(ghost) short = short or lacks(supplies, ghost) end)
   return short and REASON.missing_materials or REASON.no_progress
 end
 

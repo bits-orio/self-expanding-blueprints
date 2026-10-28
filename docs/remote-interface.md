@@ -111,7 +111,7 @@ Every argument is checked when the call arrives. A bad one returns `nil, "invali
 | `direction` | north | the seed's facing |
 | `directions` | east, south | where copies of a design without socket arrows grow on: a list of directions without repeats |
 | `max_instances` | no limit | stop after this many copies; a whole number, at least 1 |
-| `materials` | true | wait until the construction network (on a space platform, its hub) can spare what the next copy costs |
+| `materials` | true | wait until the construction networks reaching the next copy (summed; a player's personal roboport only where no roboport network reaches; on a space platform, its hub) can spare what it costs |
 | `reserve` | 0 | how many of each item the network keeps back; a whole number, at least 0 |
 | `max_building` | 2 | copies under construction at once; a whole number, at least 1 |
 | `charted_only` | true | refuse chunks the force has not charted. With false, a real project also grows over chunks that do not exist yet, which it has the game generate (gate `chunks`); a dry run never does, and takes them for uncharted |

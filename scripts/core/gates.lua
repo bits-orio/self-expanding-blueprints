@@ -10,16 +10,19 @@ local gates = {}
 
 local STATE = const.PROJECT_STATE
 
--- The network whose robots can build at `position`, preferring the one with
--- the most idle construction robots.
-function gates.network_at(surface, force, position)
-  local best
+-- The construction networks whose robots can build at `position`. A
+-- player's personal roboport is a network of its own (a mobile cell) that
+-- builds from the player's pockets and leaves with them, so it counts only
+-- where no roboport network reaches (measured on 2.1.23: the engine lists
+-- it among the others, and its item count is the player's inventory).
+function gates.networks_at(surface, force, position)
+  local fixed, personal = {}, {}
   for _, network in pairs(surface.find_logistic_networks_by_construction_area(position, force)) do
-    if not best or network.available_construction_robots > best.available_construction_robots then
-      best = network
-    end
+    local cell = network.find_cell_closest_to(position)
+    local list = (cell and cell.mobile) and personal or fixed
+    list[#list + 1] = network
   end
-  return best
+  return #fixed > 0 and fixed or personal
 end
 
 -- On a space platform the hub builds every ghost from its own inventory:
@@ -30,20 +33,27 @@ local function hub_of(surface)
   return hub and hub.valid and hub or nil
 end
 
--- What a stamp at `position` is built from: the construction network
--- reaching it, or a platform's hub inventory (both count items alike), or
--- nil when nothing builds there.
-function gates.supply_at(surface, force, position)
+-- What a stamp at `position` is built from, as a list: a platform's hub
+-- inventory, or the networks reaching it (gates.networks_at); empty where
+-- nothing builds there. Items are counted across the list.
+function gates.supplies_at(surface, force, position)
   local hub = hub_of(surface)
-  if hub then return hub.get_inventory(defines.inventory.hub_main) end
-  return gates.network_at(surface, force, position)
+  if hub then return { hub.get_inventory(defines.inventory.hub_main) } end
+  return gates.networks_at(surface, force, position)
 end
 
--- The first item the supply cannot spare, as {name, quality, count (what
--- the stamp needs), have (what the supply can spare)}, or nil.
-local function short_of(supply, cost, reserve)
+-- How many of an item ({name, quality}) the supplies hold together.
+function gates.count(supplies, item)
+  local n = 0
+  for _, supply in ipairs(supplies) do n = n + supply.get_item_count(item) end
+  return n
+end
+
+-- The first item the supplies cannot spare, as {name, quality, count (what
+-- the stamp needs), have (what they can spare)}, or nil.
+local function short_of(supplies, cost, reserve)
   for _, item in ipairs(cost) do
-    local spare = supply.get_item_count({ name = item.name, quality = item.quality }) - (reserve or 0)
+    local spare = gates.count(supplies, { name = item.name, quality = item.quality }) - (reserve or 0)
     if spare < item.count then
       return { name = item.name, quality = item.quality, count = item.count, have = math.max(0, spare) }
     end
@@ -86,12 +96,12 @@ end
 -- true, or false with a reason (and for missing materials the first
 -- missing item).
 function gates.materials(surface, force, position, cost, reserve)
-  local supply = gates.supply_at(surface, force, position)
-  if not supply then return false, const.REASON.no_network end
-  if supply.object_name == "LuaLogisticNetwork" and not gates.robots_idle(supply) then
+  local supplies = gates.supplies_at(surface, force, position)
+  if #supplies == 0 then return false, const.REASON.no_network end
+  if supplies[1].object_name == "LuaLogisticNetwork" and not gates.robots_idle(supplies) then
     return false, const.REASON.robots_busy
   end
-  local missing = short_of(supply, cost, reserve)
+  local missing = short_of(supplies, cost, reserve)
   if missing then return false, const.REASON.missing_materials, missing end
   return true
 end
@@ -159,13 +169,16 @@ function gates.may_start(force_index)
   return active < cap
 end
 
--- Enough of the network's construction robots idle (seb-idle-robot-share
--- percent), so growth leaves room for the team's own building.
-function gates.robots_idle(network)
+-- Enough of the networks' construction robots idle (seb-idle-robot-share
+-- percent of them all), so growth leaves room for the team's own building.
+function gates.robots_idle(networks)
   local share = settings.global["seb-idle-robot-share"].value
   if share == 0 then return true end
-  local all = network.all_construction_robots
-  return all == 0 or network.available_construction_robots * 100 >= share * all
+  local idle, all = 0, 0
+  for _, network in ipairs(networks) do
+    idle, all = idle + network.available_construction_robots, all + network.all_construction_robots
+  end
+  return all == 0 or idle * 100 >= share * all
 end
 
 return gates
