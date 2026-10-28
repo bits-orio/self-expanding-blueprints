@@ -112,12 +112,10 @@ local click = {
   ["close-help"] = function(player) help_view.close(player) end,
   -- A [tip] link opens Tips and Tricks only from chat.
   ["help-tip"] = function(player, tags) player.print({ "seb-message.tip-link", "[tip=" .. tags.tip .. "]" }) end,
-  grow = function(player)
-    if tool.give(player) then window.close(player) end
-  end,
-  ["area-tool"] = function(player)
-    if tool.give_area(player) then window.close(player) end
-  end,
+  -- The window stays open: the map takes clicks beside it, and its projects
+  -- list shows each new project as it starts.
+  grow = function(player) tool.give(player) end,
+  ["area-tool"] = function(player) tool.give_area(player) end,
   -- Left click: where the project grows now. Right click: all of it.
   ["locate-project"] = function(player, tags, _, event)
     local project = registry.project(tags.project)

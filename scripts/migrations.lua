@@ -95,6 +95,20 @@ local function recount_emptied()
   end
 end
 
+-- Projects and designs per team are unlimited by default since 0.2.5; a
+-- save still on the old defaults (20 projects, 100 designs) moves with
+-- them, once, so a limit an admin sets later stays.
+local OLD_DEFAULTS = { ["seb-max-projects-per-force"] = 20, ["seb-max-designs-per-force"] = 100 }
+
+local function unlimited_defaults()
+  if storage.unlimited_defaults then return end
+  storage.unlimited_defaults = true
+  for name, old in pairs(OLD_DEFAULTS) do
+    local setting = settings.global[name]
+    if setting and setting.value == old then settings.global[name] = { value = 0 } end
+  end
+end
+
 function migrations.run()
   forgetting.sweep()
   fill_projects()
@@ -105,6 +119,7 @@ function migrations.run()
   forget_old_projects()
   attach_prepared()
   recount_emptied()
+  unlimited_defaults()
 end
 
 return migrations

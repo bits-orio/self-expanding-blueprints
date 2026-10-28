@@ -1,11 +1,13 @@
 -- Growing from the map. The window's Grow button puts the chosen design in
 -- the cursor (grow_cursor.lua): its ghosts follow the pointer, and a click
--- grows the first copy exactly where they showed; the hand is empty after. The area tool, a button of
+-- grows the first copy exactly where they showed; the design comes back into
+-- the hand, so each click starts another project. The area tool, a button of
 -- its own, fills a dragged rectangle (a click on it grows from there too), and
 -- a right-drag retires the instances it touches. Works from map and remote
 -- view: the surface acted on is the one the player looks at.
 
 local const = require("scripts.const")
+local scheduler = require("scripts.core.scheduler")
 local geometry = require("scripts.core.geometry")
 local registry = require("scripts.core.registry")
 local library = require("scripts.core.library")
@@ -23,6 +25,10 @@ local tool = {}
 
 -- A click arrives as a selection of at most about one tile.
 local CLICK_SIZE = 1.5
+-- While the button stays down the engine pastes again at the same spot
+-- every 6 ticks once the hand is refilled (measured on 2.1.23): a paste
+-- where the last one was, within this many ticks of it, is that same click.
+local REPEAT_TICKS = 15
 
 -- The design the player chose in the window, still in their library.
 local function chosen(player)
@@ -35,8 +41,10 @@ function tool.give(player)
   local design = chosen(player)
   if not design then return false end
   local stack = cursor.free(player)
-  if not (stack and grow_cursor.write(stack, design)) then return false end
-  registry.player(player.index).tool_design = design.id
+  local holds = stack and grow_cursor.write(stack, design)
+  if not holds then return false end
+  local state = registry.player(player.index)
+  state.tool_design, state.held = design.id, holds
   return true
 end
 
@@ -149,6 +157,9 @@ local function grow(player, surface, where)
   if not design then return cursor.say(player, refusal) end
   local project, other, taken = projects.start(grow_params(player, surface, design, where))
   if taken then return tell_taken(player, taken) end
+  -- A project started a moment ago, its first copy not down yet, is there:
+  -- the player clicked twice.
+  if not project and other == const.REASON.seed_occupied then return end
   if not project then return cursor.say(player, { "seb-reason." .. other }) end
   cursor.say(player, { "seb-message.growing", design.name })
   tell_dropped(player, other)
@@ -201,18 +212,52 @@ local function turned(event)
   return direction, event.flip_horizontal ~= event.flip_vertical
 end
 
+-- Whether a paste is the last one again: the same spot, the button held.
+local function repeated(state, position)
+  local last = state.last_paste
+  local same = last ~= nil and last.x == position.x and last.y == position.y and game.tick - last.tick <= REPEAT_TICKS
+  state.last_paste = { x = position.x, y = position.y, tick = game.tick }
+  return same
+end
+
+-- The design comes back into the hand the tick after a click, so the next
+-- click starts the next project; not if the hand holds something else by
+-- then, or the design is gone.
+scheduler.register("refill-hand", function(item)
+  local player = game.get_player(item.player_index)
+  local stack = player and player.connected and player.cursor_stack
+  if not stack or stack.valid_for_read or player.cursor_ghost or player.cursor_record then return end
+  local design = library.get(player.force.index, item.design_id)
+  local holds = design and grow_cursor.write(stack, design, item.turned)
+  if not holds then return end
+  local state = registry.player(player.index)
+  state.tool_design, state.held = design.id, holds
+end)
+
+-- The turn and flip of a paste of what the hand held, itself turned and
+-- flipped as `held`: the paste's own on top (a flip turns the other way).
+local function combined(held, direction, mirrored)
+  local d, m = held and held.direction or 0, held and held.mirrored == true
+  return (direction + (mirrored and -d or d)) % 16, m ~= mirrored
+end
+
 -- A click with the design in hand. An empty cursor calls the engine's paste
 -- off, so nothing of it is built; the copy grows from where its ghosts
--- showed, turned and flipped as the player turned and flipped them. The hand
--- stays empty: a design handed back while the button is still down is pasted
--- again (measured), so another project takes another press of Grow. Over
--- water the engine refuses a plain click; a Shift paste reaches here, and a
--- Ctrl + Shift one superforces the project.
+-- showed, turned and flipped as the player turned and flipped them. The
+-- design is handed back next tick (a hand refilled within the click lets
+-- the engine paste it). Over water the engine refuses a plain click; a
+-- Shift paste reaches here, and a Ctrl + Shift one superforces the project.
 function tool.on_pre_build(event)
   local player = game.get_player(event.player_index)
   if not (player and grow_cursor.held(player)) then return end
+  local state = registry.player(player.index)
   player.clear_cursor()
-  local direction, mirrored = turned(event)
+  local direction, mirrored = combined(state.held, turned(event))
+  scheduler.at(game.tick + 1, {
+    kind = "refill-hand", player_index = player.index, design_id = state.tool_design,
+    turned = { direction = direction, mirrored = mirrored },
+  })
+  if repeated(state, event.position) then return end
   grow(player, player.surface, {
     point = event.position, direction = direction, mirrored = mirrored,
     superforced = event.build_mode == defines.build_mode.superforced,

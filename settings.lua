@@ -9,7 +9,7 @@
 data:extend({
   {
     type = "int-setting", name = "seb-max-projects-per-force", setting_type = "runtime-global",
-    default_value = 20, minimum_value = 0, order = "a",
+    default_value = 0, minimum_value = 0, order = "a",
   },
   {
     type = "int-setting", name = "seb-max-building-per-force", setting_type = "runtime-global",
@@ -21,7 +21,7 @@ data:extend({
   },
   {
     type = "int-setting", name = "seb-max-designs-per-force", setting_type = "runtime-global",
-    default_value = 100, minimum_value = 0, order = "d",
+    default_value = 0, minimum_value = 0, order = "d",
   },
   {
     type = "int-setting", name = "seb-max-design-parts", setting_type = "runtime-global",

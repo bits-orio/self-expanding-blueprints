@@ -116,6 +116,19 @@ end
 -- Returns the project and, for a plan, the plans stopped to make room for
 -- it (or nil); or nil and why not. A plan never counts toward the force's
 -- projects (limits "projects"), only toward its plans.
+-- A project started a moment ago whose first copy is not stamped yet: its
+-- seed holds its spot too, or a click right after it (grow, grow, grow)
+-- could start a project on top of it. Only clicks pay for the walk.
+local function seed_pending(surface_index, box)
+  for _, project in pairs(storage.projects) do
+    if project.count == 0 and project.seed_box and project.state == STATE.growing
+      and project.surface_index == surface_index and geometry.overlaps(project.seed_box, box) then
+      return true
+    end
+  end
+  return false
+end
+
 function projects.start(params)
   local design = library.get(params.force_index, params.design_id)
   if not design then return nil, REASON.unknown_design end
@@ -133,8 +146,10 @@ function projects.start(params)
   local box = placement.footprint(prepared, seed, direction)
   local taken = footprints.overlapping(params.surface_index, box)
   if #taken > 0 then return nil, REASON.seed_occupied, taken end
+  if seed_pending(params.surface_index, box) then return nil, REASON.seed_occupied end
   local dropped = params.dry_run and drop_plans_for(params.force_index) or nil
   local project = new_project(params, design, seed, direction)
+  project.seed_box = box
   registry.add_project(project)
   history.add(project, { kind = "started", position = seed })
   loop.queue_advance(project, 1)

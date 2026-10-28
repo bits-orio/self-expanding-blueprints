@@ -1,6 +1,11 @@
 ---------------------------------------------------------------------------------------------------
 Version: 0.2.5
 Date: 2026-10-28
+  Features:
+    - The design stays in your hand after a click, turned and flipped as you had it: each click starts another project, so a row of projects takes a row of clicks. Holding the button down starts one.
+    - Grow and Fill an area leave the window open, so each new project shows in its list as it starts.
+  Changes:
+    - Projects and designs per team are unlimited by default (map settings Projects per team and Designs per team, 0 = no limit). A save still on the old defaults (20 projects, 100 designs) moves to the new ones once.
   Bugfixes:
     - Standing next to a project with a personal roboport made growth wait for materials counted in your inventory instead of in your base ("the network can spare 1" while the base held plenty). Every roboport network reaching the next copy now counts, together; a personal roboport counts only where none reaches.
 ---------------------------------------------------------------------------------------------------
