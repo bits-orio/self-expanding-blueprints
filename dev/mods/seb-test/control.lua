@@ -59,6 +59,8 @@ local CASES = {
   require("cases.water"),
   require("cases.water_floors"),
   require("cases.delete_design"),
+  require("cases.creeper"),
+  require("cases.creeper_race"),
 }
 
 local START_TICK = 60

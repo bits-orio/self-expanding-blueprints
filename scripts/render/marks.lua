@@ -1,6 +1,7 @@
 -- A project's marks on the map: an arrow on each of the next sockets it
 -- tries, in its order (at most const.MAX_DRAWN_SOCKETS; the one a gate
--- holds says why), the sockets no robots reach (as many at most) and the
+-- holds says why), the sockets no robots reach and those waiting for the
+-- copy they grow from to be removed (as many at most each) and the
 -- blocked ones it remembers (const.MAX_BLOCKED_KEPT), each with its
 -- reason, and a plan's planned copies as outlines. A refresh keeps every
 -- mark that still stands and draws only the new ones, so an advance costs
@@ -33,16 +34,21 @@ local function outline(base, copy)
 end
 
 -- The project's marks: {sockets = {[socket] = mark}, parked = {[socket] =
--- mark}, blocked = {[entry] = mark}, planned = {outline, ...}}, a mark
--- being {key = what it shows, objects}. A save from before holds one list
--- of every object: it goes, and a plan's outlines are drawn again. Returns
--- the store and whether it was made now (every outline drawn).
+-- mark}, awaiting = {[socket] = mark}, blocked = {[entry] = mark}, planned
+-- = {outline, ...}}, a mark being {key = what it shows, objects}. A save
+-- from before holds one list of every object: it goes, and a plan's
+-- outlines are drawn again; a store from before awaiting sockets gets
+-- their set. Returns the store and whether it was made now (every outline
+-- drawn).
 local function store_of(project, base)
   local all = storage.renders.projects
   local store = all[project.id]
-  if store and store.sockets then return store, false end
+  if store and store.sockets then
+    store.awaiting = store.awaiting or {}
+    return store, false
+  end
   draw.destroy_all(store)
-  store = { sockets = {}, parked = {}, blocked = {}, planned = {} }
+  store = { sockets = {}, parked = {}, awaiting = {}, blocked = {}, planned = {} }
   for _, copy in pairs(project.planned or {}) do store.planned[#store.planned + 1] = outline(base, copy) end
   all[project.id] = store
   return store, true
@@ -113,6 +119,8 @@ function marks.refresh(project)
   local function paint(socket, key) return socket_mark(base, socket, key) end
   sync(store.sockets, ahead, function(socket) return socket == held and project.gate.reason or "open" end, paint, pass)
   sync(store.parked, first(project.parked, MAX), function() return const.REASON.no_network end, paint, pass)
+  sync(store.awaiting, first(project.awaiting or {}, MAX), function() return const.REASON.parent_retiring end,
+    paint, pass)
   sync(store.blocked, project.blocked, function() return "blocked" end,
     function(entry) return cross(base, entry) end, pass)
 end
@@ -130,7 +138,7 @@ function marks.drop(project_id)
   local store = all[project_id]
   all[project_id] = nil
   if not (store and store.sockets) then return draw.destroy_all(store) end
-  for _, set in ipairs({ store.sockets, store.parked, store.blocked }) do
+  for _, set in ipairs({ store.sockets, store.parked, store.awaiting or {}, store.blocked }) do
     for _, mark in pairs(set) do draw.destroy_all(mark.objects) end
   end
   draw.destroy_all(store.planned)

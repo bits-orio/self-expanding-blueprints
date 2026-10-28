@@ -1,7 +1,9 @@
 -- A project's open sockets: the frontier, plus the sockets parked because
--- no construction robots reach them. Coverage grows without an engine event
--- (roboports gain power and robots silently), so the project returns parked
--- sockets to the frontier on a slow timer.
+-- no construction robots reach them, and those waiting for the copy they
+-- grow from to be removed (project.awaiting). Coverage grows without an
+-- engine event (roboports gain power and robots silently), so the project
+-- returns parked sockets to the frontier on a slow timer; a waiting socket
+-- returns when its copy is gone (frontier.release, on that event).
 --
 -- project.frontier is every open socket in no particular order, the list
 -- the window, the remote interface and the builder count. A socket leaves
@@ -203,13 +205,37 @@ function frontier.unpark(project)
   for _, socket in ipairs(parked) do push(project, socket) end
 end
 
--- Open sockets not yet tried for good, parked ones included.
+-- The socket tried waits for the copy it grows from (socket.from) to be
+-- removed: it leaves the frontier for project.awaiting.
+function frontier.await(project, socket)
+  if not frontier.take(project, socket) then return end
+  local awaiting = project.awaiting or {}
+  project.awaiting = awaiting
+  awaiting[#awaiting + 1] = socket
+end
+
+-- The copy `id` is gone: the sockets waiting for it go to the back of the
+-- frontier, to be tried again. Returns whether any did.
+function frontier.release(project, id)
+  local kept, freed = {}, {}
+  for _, socket in ipairs(project.awaiting or {}) do
+    local into = socket.from == id and freed or kept
+    into[#into + 1] = socket
+  end
+  if #freed == 0 then return false end
+  indexed(project)
+  project.awaiting = kept
+  for _, socket in ipairs(freed) do push(project, socket) end
+  return true
+end
+
+-- Open sockets not yet tried for good, parked and waiting ones included.
 function frontier.pending(project)
-  return #project.frontier + #project.parked
+  return #project.frontier + #project.parked + #(project.awaiting or {})
 end
 
 function frontier.clear(project)
-  project.frontier, project.parked = {}, {}
+  project.frontier, project.parked, project.awaiting = {}, {}, {}
   project.frontier_seq = project.frontier_seq or 0
   project.frontier_queue = project.order ~= "nearest" and { first = 1, last = 0 } or nil
 end

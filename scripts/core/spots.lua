@@ -21,9 +21,10 @@ function spots.closed(reason, position)
   return { kind = "closed", reason = reason, position = position }
 end
 
-local function gate(reason, item)
+function spots.gate(reason, item)
   return { kind = "gate", reason = reason, item = item }
 end
+local gate = spots.gate
 
 -- The chunks under a footprint, which a check walks one by one.
 function spots.chunks(footprint)

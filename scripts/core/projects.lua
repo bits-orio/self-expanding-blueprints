@@ -244,8 +244,8 @@ function projects.summary(project)
   return {
     id = project.id, state = project.state, design_id = project.design_id, surface_index = project.surface_index,
     count = project.count, building = project.building, open_sockets = #project.frontier, parked = #project.parked,
-    gate = project.gate and project.gate.reason, blocked = #project.blocked, closed = closed,
-    stalled = projects.stalled_count(project), waiting_ore = table_size(project.waiting_ore or {}),
+    awaiting = #(project.awaiting or {}), gate = project.gate and project.gate.reason, blocked = #project.blocked,
+    closed = closed, stalled = projects.stalled_count(project), waiting_ore = table_size(project.waiting_ore or {}),
     status = status.of(project), history = history.copy(project),
     nothing_built = nothing_built(project.nothing_built),
   }

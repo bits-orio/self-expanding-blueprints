@@ -4,8 +4,9 @@
 --             robot reach: `unreachable` counts them)
 --   waiting   a gate holds it (materials, map generation, its team's share
 --             of server time), or nothing is building and every spot left
---             is out of robot reach, or every copy left waits for its ore
---             to run out (`count` of either)
+--             is out of robot reach, or spots wait for the copy they grow
+--             from to be removed, or every copy left waits for its ore to
+--             run out (`count` of each)
 --   stalled   a copy in flight has made no progress for a while
 --   paused, finished, stopped
 --   planning, planned   a dry run laying out its plan (with the `reason`
@@ -61,6 +62,10 @@ function status.of(project)
   local unreachable = #project.parked
   local idle = #project.frontier == 0 and project.building == 0
   if unreachable > 0 and idle then return { level = "waiting", reason = REASON.no_network, count = unreachable } end
+  -- Asked before the ore: copies waiting for their ore may wait on these
+  -- spots (the copy laid where a miner stood may power the next miner).
+  local awaiting = #(project.awaiting or {})
+  if awaiting > 0 and idle then return { level = "waiting", reason = REASON.parent_retiring, count = awaiting } end
   local ore = table_size(project.waiting_ore or {})
   if ore > 0 and idle then return { level = "waiting", reason = REASON.ore_left, count = ore } end
   return { level = "growing", unreachable = unreachable, ore = ore }

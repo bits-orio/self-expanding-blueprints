@@ -9,6 +9,7 @@ local library = require("scripts.core.library")
 local projects = require("scripts.core.projects")
 local status = require("scripts.core.status")
 local history = require("scripts.core.history")
+local frontier = require("scripts.core.frontier")
 
 local MANIFEST = {
   seb_projects = {
@@ -40,7 +41,7 @@ local function row(project)
   return {
     id = project.id, design = design_name(project), state = project.state, status = status.of(project),
     built = project.count - project.building, building = project.building,
-    spots_to_try = #project.frontier + #project.parked,
+    spots_to_try = frontier.pending(project),
   }
 end
 

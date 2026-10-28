@@ -14,6 +14,7 @@ local registry = require("scripts.core.registry")
 local twins = require("scripts.core.twins")
 local layout = require("scripts.gui.layout")
 local status = require("scripts.core.status")
+local frontier = require("scripts.core.frontier")
 local update_queue = require("scripts.core.update_queue")
 local designs_view = require("scripts.gui.designs_view")
 local project_text = require("scripts.gui.project_text")
@@ -38,7 +39,7 @@ local function shown(project)
     key = table.concat({
       tostring(outdated), tostring(updating),
       s.level, s.reason or "", s.count or "", s.unreachable or "", s.item and s.item.name or "",
-      s.item and s.item.have or "", project.count, project.building, #project.frontier + #project.parked,
+      s.item and s.item.have or "", project.count, project.building, frontier.pending(project),
       #list, last and last.tick or "", last and last.count or "",
     }, "|"),
   }

@@ -1,12 +1,14 @@
 -- One step of the growth loop: try the next open socket of a project.
 --   resolve the target design -> place it -> rules -> overlap -> on the map
 --   (spots.lua: terrain -> probes -> obstacles -> materials gate -> stamp)
--- A socket either produces a stamp, closes with a reason, or holds the
--- project at a gate until something changes. Every design tried pays for
--- the work it did (work.lua).
+-- A socket either produces a stamp, closes with a reason, or waits at a
+-- gate until something changes (most gates hold the project at the socket;
+-- loop.lua sets a few sockets aside on their own). Every design tried pays
+-- for the work it did (work.lua).
 
 local const = require("scripts.const")
 local geometry = require("scripts.core.geometry")
+local depletion = require("scripts.core.depletion")
 local library = require("scripts.core.library")
 local twins = require("scripts.core.twins")
 local placement = require("scripts.core.placement")
@@ -80,14 +82,30 @@ local function place(project, socket, prepared)
 end
 
 -- A child overlapping the stamp it grows from can never fit (its socket sits
--- inside the parent); overlapping any other stamp means growth joined it.
+-- inside the parent), unless the parent is going for depletion: then, with
+-- nothing else in the way, the socket waits for it to be removed (the copy
+-- after a miner goes where the miner stood). Overlapping any other stamp
+-- means growth joined it.
 local function overlap(project, socket, footprint)
   local ids = footprints.overlapping(project.surface_index, footprint)
   if #ids == 0 then return nil end
+  local parent
   for _, id in ipairs(ids) do
-    if id == socket.from then return closed(REASON.overlaps_parent) end
+    if id == socket.from then parent = storage.instances[id] end
   end
-  return closed(REASON.joined)
+  if not parent then return closed(REASON.joined) end
+  if not depletion.going(parent) then return closed(REASON.overlaps_parent) end
+  if #ids > 1 then return closed(REASON.joined) end
+  return spots.gate(REASON.parent_retiring)
+end
+
+-- A plan mines nothing and opens a copy's sockets at once, so a copy that
+-- would go once mined out (depletion.mined_out_goes) is planned as gone by
+-- then: the copy that would wait for it is planned over it. Its id, or nil.
+local function gone_in_plan(project, socket)
+  if not project.rules.retire_depleted then return nil end
+  local parent = socket.from and plan.get(project, socket.from)
+  return parent and parent.mined_out_goes and socket.from or nil
 end
 
 -- Whether every corner of the footprint lies within `radius` of the seed.
@@ -115,7 +133,7 @@ local function check_rules(project, socket, footprint)
     return closed(REASON.outside_area)
   end
   if project.dry_run then
-    local hit = plan.overlaps(project, footprint)
+    local hit = plan.overlaps(project, footprint, gone_in_plan(project, socket))
     if hit then return closed(hit == socket.from and REASON.overlaps_parent or REASON.joined) end
   end
   if rules.area and not geometry.contains_box(rules.area, footprint) then return closed(REASON.outside_area) end

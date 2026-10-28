@@ -1,7 +1,8 @@
 -- Shows a player where a project is. A project moves as it grows, so the
 -- place is worked out at each click and never stored: a left click goes to
 -- where it grows now (its copies under construction, else the socket it
--- tries next, else the sockets no robots reach), a right click to the whole
+-- tries next, else the sockets no robots reach, else those waiting for the
+-- copy they grow from to be removed), a right click to the whole
 -- field. A finished project has none of those and shows its field. Remote
 -- view centres there, zoomed to fit, and an outline only that player sees
 -- blinks around it for a few seconds; the overlay already draws the front
@@ -58,6 +59,7 @@ local function now(project)
   return copies(project, instances.is_building)
     or sockets_box({ project.frontier[frontier.next_index(project) or 1] })
     or sockets_box(project.parked)
+    or sockets_box(project.awaiting or {})
 end
 
 local function field(project)

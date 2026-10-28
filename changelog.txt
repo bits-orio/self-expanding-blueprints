@@ -1,10 +1,14 @@
 ---------------------------------------------------------------------------------------------------
 Version: 0.2.2
 Date: 2026-10-27
+  Features:
+    - With "Remove copies whose ore runs out", a socket whose next copy would stand on the mined-out copy it grows from now waits for that copy to be removed, then builds there. A miner can creep along its ore and lay its belt line behind it, even on maps where nothing but miners may stand on ore.
   Bugfixes:
     - Deleting a design ends its projects and frees the ground its copies held. What they built stays.
+    - A mining copy whose drills ran dry within a second of its last ore going retired without opening its sockets, so growth stopped there.
   Modding:
     - Remote interface: delete_design.
+    - get_project: awaiting, the sockets waiting for the copy they grow from to be removed, and the status reason parent-retiring.
 ---------------------------------------------------------------------------------------------------
 Version: 0.2.1
 Date: 2026-10-27

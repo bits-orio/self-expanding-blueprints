@@ -62,6 +62,7 @@ Each line is an action, then the expected result.
 - [ ] Draw a mining design with a drill and an ore sensor on it, plus a socket: a finished copy shows its watched area in amber with "Grows on when the ore in the marked area runs out"; when the drill has mined it out, the next copy comes. (Headless: cases/mining.lua, with depleted resources.)
 - [ ] A sensor with the signal R = 1 watches a 3 × 3 square around it: growth goes on before the drill's whole 5 × 5 area is mined out.
 - [ ] Grow with "Remove copies whose ore runs out": a copy whose drills have nothing left to mine is removed by robots about ten seconds later.
+- [ ] A creeping miner from two designs: a head (a drill facing west with a sensor, a plug on its west edge, a socket past its east edge naming the head and one on the drill naming the belt piece) and a belt piece (belts and a pole, with a plug). Grow the head along an ore strip with "Remove copies whose ore runs out": once a head's ore is gone the next head goes on, the belt socket shows "Waiting for the copy it grows from to be removed", and when robots have removed the head a belt piece is built where it stood, carrying the next head's ore home. Without the option the belt socket shows "Would overlap the copy it grows from". (0.2.2; headless: cases/creeper.lua.)
 
 ## Probes, pools, plans and updates (0.2)
 

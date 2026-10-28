@@ -44,6 +44,7 @@ A plain blueprint tiles in the chosen directions, stepping by its snap grid if i
 - A **socket** goes on the first tile outside the design, pointing away from it: the next copy is built there, facing this way. Its description (the combinator description field) names the design to attach, or a labelled book (a pool: the first of its designs that fits); leave it empty to grow the same design again.
 - A **plug** (optional) goes on the design's own edge, pointing in: when a copy is built at a socket, this tile lands on the socket. A design without one attaches by the middle of its back edge, unturned.
 - An **ore sensor** makes copies wait for their ore: a copy grows on only once no ore is left where the sensor looks (on a drill, the drill's area; with its signal R, a square 2R + 1 tiles wide). Its button gives you a tool: click a tile for one sensor, drag for one on every tile (up to 64 x 64 tiles at once), right-click or right-drag takes them off. Tick **Remove copies whose ore runs out** (under More options) and dry copies are removed.
+- **A miner that moves on.** A socket can sit on its design's own ground and name another design. With **Remove copies whose ore runs out** ticked, that socket waits until robots have removed the mined-out copy, then builds its design where the copy stood. Two designs make a creeping miner: a head (a drill with an ore sensor, a socket past its edge naming the head and one on the drill naming the belt piece) and a belt piece (belts and a pole). Each head moves on once its ore is gone and the belt line grows behind it, even on maps where nothing but miners may stand on ore. Without the option, such a socket closes as "Would overlap the copy it grows from".
 - A **probe** says what must be under its tile before a copy is built there: some ore, the ores its signals name, water, or with the signal "deny" the opposite.
 - A **port** on a combinator makes it each copy's mailbox for the blueprint builder.
 - **Keep clear** marks a tile your build needs empty, inside it or past its edge: copies keep off it, trees and rocks there are cleared, and a building there stops the copy (or is removed, with Replace buildings in the way). Its button gives you a tool that works like the ore sensor's but skips tiles under your buildings; the marker looks like red corner brackets around a red cross. Negative Space's plain marker in a design works the same way, and its automatic ones around belts and pipes are left out.
@@ -51,6 +52,8 @@ A plain blueprint tiles in the chosen directions, stepping by its snap grid if i
 A design with socket arrows grows only through them. Two designs that name each other alternate; a socket pointing south on a design whose entry faces east turns its child a quarter turn.
 
 ![A road piece whose socket grows it east and hangs a solar cell off each piece, until the lake stops it](docs/media/sockets.gif)
+
+![A creeping miner: each head moves on once its ore is gone, and a belt piece goes down where it stood](docs/media/creeper.gif)
 
 ### Rules and gates
 

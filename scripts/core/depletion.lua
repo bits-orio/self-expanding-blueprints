@@ -116,6 +116,24 @@ local function dry(instance)
   return true
 end
 
+-- Whether the copy is going for depletion: it is being removed for it, or
+-- it will be once its drills run dry, its project removing mined-out copies
+-- (its drills are watched), and they have, or its sensors see no ore left
+-- (its sockets are open, so they do). A child that only it stands in the
+-- way of waits for it to go (growth.lua).
+function depletion.going(instance)
+  if instance.state == const.STATE.retiring then return instance.retired_for == "depleted" end
+  if not (instance.drill_areas and instance.state == const.STATE.complete) then return false end
+  return (#(instance.sensors or {}) > 0 and not instance.waiting_ore) or dry(instance)
+end
+
+-- The same of a design's copies, for a plan, which mines nothing and opens
+-- a copy's sockets at once: a copy with drills and sensors would be going,
+-- in a project that removes mined-out copies, by the time they open.
+function depletion.mined_out_goes(prepared)
+  return (prepared.drill_count or 0) > 0 and #(prepared.sensors or {}) > 0
+end
+
 -- The tick a copy's queued look of each kind is due (kept on the copy).
 local QUEUED = { ["ore-check"] = "ore_check_tick", ["drill-check"] = "drill_check_tick" }
 
@@ -175,15 +193,24 @@ local function on_look(kind, look)
   end)
 end
 
-on_look("ore-check", function(instance)
-  if not instance.waiting_ore or ore_left(instance) then return end
+-- Its sensors see no ore left: its sockets open.
+local function ore_gone(instance)
   unwatch(KIND.ore, instance, instance.sensors)
   instance.waiting_ore = nil
   if depletion.hooks.ore_gone then depletion.hooks.ore_gone(instance) end
+end
+
+on_look("ore-check", function(instance)
+  if not instance.waiting_ore or ore_left(instance) then return end
+  ore_gone(instance)
 end)
 
+-- A copy found dry may have seen its last ore go less than an ore look ago:
+-- that look would find the copy forgotten and never open its sockets, so
+-- they open here, before it retires.
 on_look("drill-check", function(instance)
   if not (instance.drill_areas and instance.state == const.STATE.complete) or not dry(instance) then return end
+  if instance.waiting_ore and not ore_left(instance) then ore_gone(instance) end
   depletion.forget(instance)
   if depletion.hooks.dry then depletion.hooks.dry(instance) end
 end)

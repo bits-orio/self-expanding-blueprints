@@ -4,6 +4,7 @@
 -- relative to when it is drawn, so the row redraws it on hover.
 
 local const = require("scripts.const")
+local frontier = require("scripts.core.frontier")
 
 local project_text = {}
 
@@ -68,7 +69,7 @@ end
 -- it, and whether its copies wait their turn to be updated.
 function project_text.caption(project, s, name, updating)
   local color = nothing_built(project) and COLOR.stalled or COLOR[s.level]
-  local open = #project.frontier + #project.parked
+  local open = frontier.pending(project)
   local progress = project.dry_run and { "seb-gui.plan-progress", project.count, open }
     or { "seb-gui.project-progress", project.count - project.building, project.building, open }
   local turned = { "seb-gui.project-turned", { project.mirrored and "seb-gui.paste-flipped" or "seb-gui.paste-unflipped" },

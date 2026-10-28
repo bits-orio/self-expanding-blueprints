@@ -78,7 +78,7 @@ local function counts(project)
   for reason, count in pairs(project.closed) do
     if loop.MARKED[reason] then blocked = blocked + count end
   end
-  return #project.frontier + #project.parked, blocked, project.count - project.building
+  return frontier.pending(project), blocked, project.count - project.building
 end
 
 -- The design of the next copy and how many the socket offered: the first

@@ -3,8 +3,9 @@
 -- when their instance completes, so growth runs exactly as fast as the
 -- robots. A gate holds the next socket until a completion (capacity), a
 -- retry timer, the map or the force's turn reopens it (holds.lua); a socket
--- no robots reach is parked on its own and retried slowly, so it never
--- blocks the rest.
+-- no robots reach is parked on its own and retried slowly, and one whose
+-- copy would stand on its parent, going for depletion, waits on its own
+-- until the parent is gone, so neither blocks the rest.
 
 local const = require("scripts.const")
 local scheduler = require("scripts.core.scheduler")
@@ -126,7 +127,7 @@ local function parked_key(project)
   if not gate then return nil end
   local item = gate.item
   return table.concat({ gate.reason, item and item.name or "", item and item.have or "", #project.frontier,
-    #project.parked, project.count, project.building, #project.blocked }, "|")
+    #project.parked, #(project.awaiting or {}), project.count, project.building, #project.blocked }, "|")
 end
 
 -- A socket no robots reach is parked on its own; the first time it is, the
@@ -186,9 +187,15 @@ local function close(project, socket, result)
 end
 
 -- No robots reaching a socket is its own condition: it is parked, and the
--- rest go on. Any other gate, a pool step stopped midway too, holds the
--- project at this socket (holds.lua).
+-- rest go on. So is waiting for the copy it grows from to be removed: the
+-- socket is set aside until that copy is gone (copy_events.lua). Any other
+-- gate, a pool step stopped midway too, holds the project at this socket
+-- (holds.lua).
 local function gated(project, socket, result)
+  if result.reason == REASON.parent_retiring then
+    frontier.await(project, socket)
+    return 1, false
+  end
   if result.reason ~= REASON.no_network then return holds.hold(project, result) end
   park(project, socket)
   return 1, false

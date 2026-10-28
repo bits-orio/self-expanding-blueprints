@@ -162,12 +162,13 @@ prepare.LIMITS = {
   [const.REASON.design_too_big] = true, [const.REASON.too_many_sockets] = true, [const.REASON.too_many_poles] = true,
 }
 
--- The electric poles among a design's parts.
-local function poles_in(buildable)
+-- The parts of a design of one entity type: electric poles (a size limit),
+-- mining drills (depletion.lua).
+local function count_type(buildable, type)
   local n = 0
   for _, e in ipairs(buildable) do
     local proto = prototypes.entity[e.name]
-    if proto and proto.type == "electric-pole" then n = n + 1 end
+    if proto and proto.type == type then n = n + 1 end
   end
   return n
 end
@@ -189,7 +190,7 @@ local function read(design, source, limited)
   local reach = reach_of(inner, entities)
   if limited and too_wide(reach) then return nil, too_big end
   if limited and #first.sockets > const.MAX_DESIGN_SOCKETS then return nil, const.REASON.too_many_sockets end
-  local poles = poles_in(first.buildable)
+  local poles = count_type(first.buildable, "electric-pole")
   if limited and poles > const.MAX_DESIGN_POLES then return nil, const.REASON.too_many_poles end
   if #first.entries > 1 then return nil, "many-entries" end
   if not inner then return nil, "empty-blueprint" end
@@ -249,6 +250,7 @@ function prepare.run(design, source, copy, opts)
     sensors = sensor_areas, sensor_categories = sensor_categories, probes = parts.probes, port = parts.ports[1],
     clears = parts.clears, reach = blueprint.reach, parts = blueprint.parts,
     entity_count = #parts.buildable, tile_count = #tiles, pole_count = blueprint.poles, cost = cost_of(copy),
+    drill_count = count_type(parts.buildable, "mining-drill"),
   }
 end
 

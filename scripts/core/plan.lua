@@ -6,6 +6,7 @@
 
 local geometry = require("scripts.core.geometry")
 local placement = require("scripts.core.placement")
+local depletion = require("scripts.core.depletion")
 
 local plan = {}
 
@@ -18,15 +19,15 @@ function plan.get(project, id)
   return project.planned and project.planned[id]
 end
 
--- The id of a planned copy `box` overlaps, or nil.
-function plan.overlaps(project, box)
+-- The id of a planned copy `box` overlaps, other than `except`, or nil.
+function plan.overlaps(project, box, except)
   local seen, hit = {}, nil
   geometry.each_chunk(box, function(cx, cy)
     if hit then return end
     for _, id in ipairs(project.plan_chunks[geometry.chunk_key(cx, cy)] or {}) do
       if not seen[id] then
         seen[id] = true
-        if geometry.overlaps(project.planned[id].footprint, box) then
+        if id ~= except and geometry.overlaps(project.planned[id].footprint, box) then
           hit = id
           return
         end
@@ -46,7 +47,8 @@ local function index(project, copy)
 end
 
 -- Files a spot that passed every check as a planned copy and returns it.
--- It has what frontier.open and the placement of children read.
+-- It has what frontier.open and the placement of children read, and
+-- whether a real copy would go once mined out (growth.lua plans over it).
 function plan.add(project, p)
   project.plan_count = (project.plan_count or 0) + 1
   local copy = {
@@ -54,6 +56,7 @@ function plan.add(project, p)
     position = p.position, direction = p.direction, footprint = p.footprint,
     repeat_size = placement.repeat_size(p.prepared, p.direction),
     sockets = placement.sockets(p.prepared, p.position, p.direction),
+    mined_out_goes = depletion.mined_out_goes(p.prepared) or nil,
   }
   project.planned[copy.id] = copy
   index(project, copy)

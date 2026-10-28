@@ -95,6 +95,9 @@ const.REASON = {
   chunks = "chunks",
   -- A finished copy whose ore sensors still see ore.
   ore_left = "ore-left",
+  -- A socket whose next copy would stand on the copy it grows from, which is
+  -- going for depletion: it waits, out of the frontier, until that copy is gone.
+  parent_retiring = "parent-retiring",
   -- A probe of the design does not hold where it would land.
   probe = "probe",
   -- Land Title Registry: the land is not held well enough for a part.

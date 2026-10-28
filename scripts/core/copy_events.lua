@@ -1,6 +1,7 @@
 -- What a project hears from its copies: one finished (open its sockets, or
 -- wait for its ore), came out incomplete, stalled, was updated in place,
--- ran out of ore. Each event is an instances.lua or depletion.lua hook.
+-- ran out of ore, is gone. Each event is an instances.lua or depletion.lua
+-- hook.
 
 local const = require("scripts.const")
 local registry = require("scripts.core.registry")
@@ -103,6 +104,15 @@ end
 
 instances.hooks.completed = function(instance) settle(instance, true) end
 instances.hooks.incomplete = function(instance) settle(instance, false) end
+
+-- It is gone: the sockets that waited for it, their copies standing where
+-- it stood, are tried again (growth.lua).
+instances.hooks.retired = function(instance)
+  local project = project_of(instance)
+  if not (project and frontier.release(project, instance.id)) then return end
+  loop.queue_advance(project, 1)
+  changed(project)
+end
 
 -- The project's set of stalled copies follows every instance state change;
 -- a copy that stalls, or stalls for a new reason, goes into the history.

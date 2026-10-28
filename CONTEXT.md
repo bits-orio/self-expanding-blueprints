@@ -58,7 +58,7 @@ _Avoid_: variant set, group
 A marker (`seb-port`) placed on a combinator of a design: that combinator is each copy's circuit mailbox, read and written by a blueprint builder by the copy's number.
 
 **Retire on depletion**:
-A project option (`retire_depleted`): a finished copy whose mining drills have nothing left to mine retires after its output has had time to drain.
+A project option (`retire_depleted`): a finished copy whose mining drills have nothing left to mine retires after its output has had time to drain. A socket whose child would stand on such a copy waits for it to go (see Awaiting socket).
 
 **Repeat**:
 How far an implicit socket steps: the blueprint's snap grid when it has one, else its footprint, rounded up to the lattice. Recorded on each instance, so a design updated mid-project still abuts its older copies. A blueprint with absolute snapping also keeps its world grid: seeds land in a grid cell, as a hand paste would.
@@ -95,13 +95,16 @@ _Avoid_: budget, quota (in player-facing text)
 A value the map settings give each team, which a remote caller can override for one force (`set_limits`): how many projects, plans, designs, parts per design, blueprint builders and copies in flight it may have, its share of server time, and whether builders keep to charted land. For a number, 0 means no limit. Players read a refusal as "your team already has as many ... as the server allows"; a builder answers with the `limit` error signal (D45).
 
 **Project status**:
-Why a project is where it is, derived from the registry on demand (`status.lua`): growing, waiting (a materials, map or share-of-server-time gate, every spot left out of robot reach, or every copy left waiting for its ore), stalled (a copy makes no progress), paused, finished. Holding at the capacity gate is pacing, not waiting (D26).
+Why a project is where it is, derived from the registry on demand (`status.lua`): growing, waiting (a materials, map or share-of-server-time gate, every spot left out of robot reach, spots awaiting the removal of the copy they grow from, or every copy left waiting for its ore), stalled (a copy makes no progress), paused, finished. Holding at the capacity gate is pacing, not waiting (D26).
 
 **History**:
 A project's last ten notable events as data: started, waiting, blocked, unreachable, stalled, incomplete, paused, resumed, waiting for ore, ore gone, depleted, updated, built from a plan, replaced (a plan stopped for a newer one), finished. A repeat of the newest entry counts up instead of adding a line. Shown in the projects list's tooltip and returned by `get_project` (D26).
 
 **Parked socket**:
 A socket no construction robots reach. It waits on its own, so it never holds the rest of the frontier, and returns to the frontier every ten seconds to be tried again. A project with parked sockets keeps growing.
+
+**Awaiting socket**:
+A socket whose child would stand on the instance it grows from while that instance is going for depletion (being removed for it, or due to be: its project retires depleted copies, and its drills have run dry or its sensors see no ore left). It waits on its own, out of the frontier (`project.awaiting`), and returns when that instance's retirement ends, so the child goes down where its parent stood: the belt piece behind a creeping miner (D53). Players read it as "Waiting for the copy it grows from to be removed".
 
 **Closed socket**:
 A socket that will never stamp, with a reason: joined, water, cliff, building, no resource, uncharted, off-grid, misaligned, stamp short, overlaps its parent, parent retired, outside the area, count reached, unknown design, invalid design. Joins, area edges, counts and retired parents are the normal shape of growth and are only counted; the rest are marked on the map. Once its count is reached a project closes every socket left at once, and its history says so once.

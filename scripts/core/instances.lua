@@ -23,7 +23,8 @@ local REASON = const.REASON
 -- that stops building without completing (incomplete, or retired early)
 -- reports incomplete so its project releases the slot. state(instance,
 -- old_state) follows every state change made through set_state. updated and
--- reopened(instance) end an update in place (update.lua).
+-- reopened(instance) end an update in place (update.lua). retired(instance):
+-- it is gone, its footprint out of the overlap index.
 instances.hooks = {}
 
 local function payload(instance)
@@ -186,6 +187,7 @@ local function finish_retire(instance)
   instance.entities, instance.tiles, instance.tile_units, instance.sockets, instance.slots = {}, {}, {}, {}, {}
   forgetting.unindex(instance)
   script.raise_event(events.on_instance_retired, payload(instance))
+  settle(instance, "retired")
   forgetting.after_retire(instance)
 end
 
