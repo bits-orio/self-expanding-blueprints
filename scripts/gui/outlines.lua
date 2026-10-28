@@ -25,6 +25,10 @@ local FLASH = 50            -- copies flashed at most
 local FLASH_TICKS = 300
 local FLASH_COLOR = { r = 1, g = 0.5, b = 0, a = 1 }
 local LABEL_COLOR = { r = 1, g = 0.92, b = 0.85 }
+-- A label's text is sized in tiles (it shrinks with the map) and fitted
+-- inside its copy: at scale 1 a character is about CHAR tiles wide and a
+-- line LINE tiles high (measured on screenshots).
+local CHAR, LINE, MAX_SCALE = 0.25, 0.5, 2.5
 
 local function hovered()
   storage.hover_outlines = storage.hover_outlines or {}
@@ -106,13 +110,29 @@ function outlines.label(instance)
   return name
 end
 
--- The copy's label at its top-left corner, for `ticks` (nil: until destroyed).
+-- The scale that fits two lines of at most `chars` characters in the box.
+local function fitted(box, chars)
+  local width, height = box.right - box.left, box.bottom - box.top
+  return math.min(MAX_SCALE, 0.9 * width / (CHAR * chars), 0.9 * height / (2 * LINE))
+end
+
+-- The copy's design and, below it, its project, centred on the copy, for
+-- `ticks` (nil: until destroyed). Returns the render objects.
 local function draw_label(player, surface, instance, ticks)
   local b = instance.footprint
-  return rendering.draw_text {
-    text = outlines.label(instance), surface = surface, players = { player }, color = LABEL_COLOR,
-    target = { b.left + 0.2, b.top + 0.1 }, time_to_live = ticks,
+  local design = library.get(instance.force_index, instance.design_id)
+  local name = design and twins.origin(design).name or "?"
+  local project = storage.projects[instance.project_id or 0]
+  local args = {
+    surface = surface, players = { player }, color = LABEL_COLOR, alignment = "center", time_to_live = ticks,
+    target = { (b.left + b.right) / 2, (b.top + b.bottom) / 2 }, scale = fitted(b, math.max(#name, 10)),
   }
+  local function line(text, vertical)
+    args.text, args.vertical_alignment = text, vertical
+    return rendering.draw_text(args)
+  end
+  if not project then return { line(name, "middle") } end
+  return { line(name, "bottom"), line({ "seb-gui.copy-project", project.id }, "top") }
 end
 
 -- The team's copies around the player (where they look, in remote view
@@ -130,7 +150,9 @@ local function draw_around(player)
         color = empty and EMPTY_COLOR or COPY_COLOR, width = empty and 2 or 1, filled = false, surface = surface,
         players = { player }, left_top = { b.left, b.top }, right_bottom = { b.right, b.bottom },
       }
-      if empty then objects[#objects + 1] = draw_label(player, surface, instance) end
+      if empty then
+        for _, object in ipairs(draw_label(player, surface, instance)) do objects[#objects + 1] = object end
+      end
     end
   end
   return objects
