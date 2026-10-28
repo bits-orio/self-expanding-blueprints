@@ -382,7 +382,7 @@ storage.players[player_index] = {selected_design, tool_design, grow, window_loca
 
 ### Markers
 
-- Socket, entry and probe markers (v0.2 also ore sensors, ports and Keep clear) are entities placed while drawing a design. Their ghosts are destroyed the moment a stamp creates them, so they never need items or robots.
+- Socket, entry and probe markers (v0.2 also ore sensors, ports and Keep clear) are entities placed while drawing a design. Their ghosts are destroyed the moment a stamp creates them, so they never need items or robots. v0.2.7: a player's own blueprint paste places its marker ghosts for real instead (markers.lua), and a blueprint taken over copies gets their version's markers written back in, turned as each copy is (blueprint_markers.lua, prepared.markers), so a design can be changed from a built copy.
 - Markers are constant combinators with an empty collision mask and an empty collision box (a point: a marker is a note in a design, not a building, so other mods' ground rules that measure a building's box leave it alone; D42); a socket names its target design in its description, which every blueprint stores natively (D13, ADR-0001). A probe's or sensor's settings are the signals set in its combinator (D28, D30).
 
 ### Retirement, depletion and updates

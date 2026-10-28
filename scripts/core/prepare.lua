@@ -227,6 +227,20 @@ local function write_copy(copy, source, bounds)
   copy.set_blueprint_entities(entities, false)
 end
 
+-- The markers as the blueprint wrote them (settings, a socket's target),
+-- less the anchor: a blueprint taken over copies writes them back in
+-- (blueprint_markers.lua).
+local function markers_of(entities)
+  local list = {}
+  for _, e in ipairs(entities) do
+    if (const.MARKERS[e.name] or const.FOREIGN_MARKERS[e.name]) and e.name ~= const.ANCHOR then
+      e.entity_number, e.wires = nil, nil
+      list[#list + 1] = e
+    end
+  end
+  return list
+end
+
 -- `opts.limits`: hold the blueprint to the size limits (registering it).
 function prepare.run(design, source, copy, opts)
   local blueprint, why = read(design, source, opts and opts.limits)
@@ -237,7 +251,8 @@ function prepare.run(design, source, copy, opts)
   -- it never widens the reach.
   write_copy(copy, source, blueprint.inner)
   local tiles = copy.get_blueprint_tiles() or {}
-  local parts = split(copy.get_blueprint_entities() or {})
+  local copied = copy.get_blueprint_entities() or {}
+  local parts = split(copied)
   local force = game.forces[design.force_index]
   local offsets = parts.anchor and calibration.measure(copy, parts.anchor, force, blueprint.reach)
   if not offsets then return fail(design, "calibration-failed", blueprint.parts) end
@@ -250,7 +265,7 @@ function prepare.run(design, source, copy, opts)
     sensors = sensor_areas, sensor_categories = sensor_categories, probes = parts.probes, port = parts.ports[1],
     clears = parts.clears, reach = blueprint.reach, parts = blueprint.parts,
     entity_count = #parts.buildable, tile_count = #tiles, pole_count = blueprint.poles, cost = cost_of(copy),
-    drill_count = count_type(parts.buildable, "mining-drill"),
+    drill_count = count_type(parts.buildable, "mining-drill"), markers = markers_of(copied),
   }
 end
 

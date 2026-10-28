@@ -1,4 +1,10 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.2.7
+Date: 2026-10-28
+  Features:
+    - Blueprinting built copies keeps their markers: sockets (with the design they name), plugs, ore sensors, probes, ports and Keep clear marks under your selection go into the blueprint, turned as each copy is. No more drawing them again to change a design.
+    - Pasting a blueprint with markers by hand places the markers too, instead of dropping them.
+---------------------------------------------------------------------------------------------------
 Version: 0.2.6
 Date: 2026-10-28
   Features:

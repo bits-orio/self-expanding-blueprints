@@ -13,6 +13,7 @@ local footprints = require("scripts.core.footprints")
 local instances = require("scripts.core.instances")
 local ghosts = require("scripts.core.ghosts")
 local under = require("scripts.core.under")
+local blueprint_markers = require("scripts.core.blueprint_markers")
 
 local tracking = {}
 
@@ -243,13 +244,15 @@ local function blueprint_set_up(event)
 end
 
 -- A blueprint taken over in-flight stamps captures their ghosts' tags; strip
--- them, so a library copy never carries one instance's id around.
+-- them, so a library copy never carries one instance's id around. The
+-- copies it covers get their markers back (blueprint_markers.lua).
 function tracking.on_player_setup_blueprint(event)
   local blueprint = blueprint_set_up(event)
   if not (blueprint and blueprint.is_blueprint_setup()) then return end
   for i = 1, blueprint.get_blueprint_entity_count() do
     if blueprint.get_blueprint_entity_tag(i, const.TAG) ~= nil then blueprint.set_blueprint_entity_tag(i, const.TAG, nil) end
   end
+  blueprint_markers.add(event, blueprint)
 end
 
 return tracking

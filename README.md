@@ -50,6 +50,8 @@ A plain blueprint tiles in the chosen directions, stepping by its snap grid if i
 - A **port** on a combinator makes it each copy's mailbox for the blueprint builder.
 - **Keep clear** marks a tile your build needs empty, inside it or past its edge: copies keep off it, trees and rocks there are cleared, and a building there stops the copy (or is removed, with Replace buildings in the way). Its button gives you a tool that works like the ore sensor's but skips tiles under your buildings; the marker looks like red corner brackets around a red cross. Negative Space's plain marker in a design works the same way, and its automatic ones around belts and pipes are left out.
 
+To change a design, blueprint a built copy: the copies under your selection put their markers back into the blueprint, settings and socket names included. Paste a blueprint with markers by hand and its markers are placed with it, ready to edit and blueprint again.
+
 A design with socket arrows grows only through them. Two designs that name each other alternate; a socket pointing south on a design whose entry faces east turns its child a quarter turn.
 
 ![A road piece whose socket grows it east and hangs a solar cell off each piece, until the lake stops it](docs/media/sockets.gif)

@@ -1,8 +1,9 @@
 -- Marker arrows in the player's hands. Markers are drawn into designs; a
 -- stamp destroys their ghosts itself (stamp.lua). Here: handing out marker
--- items, keeping the cursor stocked while drawing, and removing marker ghosts
--- that a player pastes with an ordinary blueprint, which robots could never
--- build (marker items exist only in the cursor).
+-- items, keeping the cursor stocked while drawing, and placing for real the
+-- marker ghosts a player pastes with an ordinary blueprint, which robots
+-- could never build (marker items exist only in the cursor): a design pasted
+-- by hand to change it comes with its markers, settings and all.
 
 local const = require("scripts.const")
 local ghosts = require("scripts.core.ghosts")
@@ -29,8 +30,10 @@ function markers.on_built_entity(event)
   if not player then return end
   if ghosts.is_marker(entity) then
     -- Placed one by one (remote view, ghost cursor) they are part of a
-    -- design being drawn; pasted with a blueprint they are leftovers.
-    if player.is_cursor_blueprint() then entity.destroy() end
+    -- design being drawn and stay ghosts; pasted with a blueprint they are
+    -- placed. The anchor is the mod's own and never belongs on the map.
+    if not player.is_cursor_blueprint() then return end
+    if entity.ghost_name == const.ANCHOR or not entity.revive() then entity.destroy() end
     return
   end
   if PLACEABLE[entity.name] then
