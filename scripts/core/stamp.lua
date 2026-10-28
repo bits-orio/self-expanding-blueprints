@@ -97,9 +97,33 @@ local function build(plan, ctx)
   return built
 end
 
-local function verdict(record, plan)
+-- Superforced, the paste makes no ghost for a part whose twin of the force
+-- already stands there (same name, place and facing; one turned another way
+-- is marked for removal and gets a ghost, measured on 2.1.23) and leaves
+-- that entity as it is, whoever's it is: a copy's own parent, say (D54). So
+-- a part with no ghost where an entity of its name and force stands counts
+-- as placed; that entity stays outside the new copy.
+local function kept_parts(plan, ctx, record)
+  local kept = 0
+  placement.each_part(plan.prepared, plan.position, plan.direction, function(e, x, y)
+    local p = { x = x, y = y }
+    if record.slots[geometry.position_key(p)] then return end
+    local found = ctx.surface.find_entity(e.name, p)
+    if found and found.force == ctx.force then kept = kept + 1 end
+  end)
+  plan.work.checked = plan.work.checked + plan.prepared.entity_count
+  return kept
+end
+
+-- A stamp places every part, or its twin stands. One that places nothing
+-- at all is short even so: it would be a copy owning nothing, finished at
+-- once on others' parts (a socket on its own plug, say).
+local function verdict(record, plan, ctx)
   if not record.aligned then return const.REASON.misaligned end
-  if record.entities < plan.prepared.entity_count then return const.REASON.stamp_short end
+  local missing = plan.prepared.entity_count - record.entities
+  if missing <= 0 then return nil end
+  if plan.superforce and record.entities > 0 and kept_parts(plan, ctx, record) >= missing then return nil end
+  return const.REASON.stamp_short
 end
 
 -- The areas the design's ore sensors watch, in world space.
@@ -127,7 +151,7 @@ function stamp.run(plan, ctx)
     return nil, const.REASON.stamp_short
   end
   local record = collect(built, id, plan)
-  local refused = verdict(record, plan)
+  local refused = verdict(record, plan, ctx)
   if refused then
     rollback(record)
     clearing.take_back(unmarked, ctx.force)

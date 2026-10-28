@@ -143,6 +143,24 @@ function rig.network(surface, at, stock, force)
   return chest
 end
 
+-- The west end of a mining line that grows east from `o` along row y = 1:
+-- power, a pole that powers a drill on the first tiles east of `o` or wires
+-- to a pole there, and a belt at (-1, 1) carrying west into a loader and a
+-- chest. Returns the chest.
+function rig.line_start(surface, o)
+  local function make(name, x, y, extra)
+    local spec = { name = name, position = { o.x + x, o.y + y }, force = rig.FORCE }
+    for k, v in pairs(extra or {}) do spec[k] = v end
+    return surface.create_entity(spec)
+  end
+  local eei = make("electric-energy-interface", -4, -3)
+  eei.power_production, eei.electric_buffer_size = 1e9, 1e10
+  make("medium-electric-pole", -2.5, -0.5)
+  make("transport-belt", -0.5, 1.5, { direction = defines.direction.west })
+  make("loader-1x1", -1.5, 1.5, { direction = defines.direction.west, type = "input" })
+  return make("iron-chest", -2.5, 1.5)
+end
+
 -- A blueprint export string from BlueprintEntity tables (and optional tiles,
 -- snap grid and absolute grid offset). The label names the design when it is
 -- registered.

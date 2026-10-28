@@ -32,26 +32,11 @@ local BELT = {
   rig.entry(2.5, 1.5, D.east),
 }
 
--- Power and a sink at the start, as in creeper.lua.
-local function start_line(surface, o)
-  local function make(name, x, y, extra)
-    local spec = { name = name, position = { o.x + x, o.y + y }, force = rig.FORCE }
-    for k, v in pairs(extra or {}) do spec[k] = v end
-    return surface.create_entity(spec)
-  end
-  local eei = make("electric-energy-interface", -4, -3)
-  eei.power_production, eei.electric_buffer_size = 1e9, 1e10
-  make("medium-electric-pole", -2.5, -0.5)
-  make("transport-belt", -0.5, 1.5, { direction = D.west })
-  make("loader-1x1", -1.5, 1.5, { direction = D.west, type = "input" })
-  make("iron-chest", -2.5, 1.5)
-end
-
 function case.setup(surface)
   local o = rig.region(REGION)
   rig.floor(surface, rig.box(o, -60, -60, 60, 60))
   rig.network(surface, rig.offset(o, -25, -25), STOCK)
-  start_line(surface, o)
+  rig.line_start(surface, o)
   for x = 0, LENGTH - 1 do
     for y = 0, 2 do
       surface.create_entity { name = "iron-ore", position = { o.x + x + 0.5, o.y + y + 0.5 }, amount = 1 }

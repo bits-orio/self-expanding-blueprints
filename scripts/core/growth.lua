@@ -81,11 +81,24 @@ local function place(project, socket, prepared)
   return placement.implicit_child(prepared, parent, socket.toward)
 end
 
--- A child overlapping the stamp it grows from can never fit (its socket sits
--- inside the parent), unless the parent is going for depletion: then, with
--- nothing else in the way, the socket waits for it to be removed (the copy
--- after a miner goes where the miner stood). Overlapping any other stamp
--- means growth joined it.
+-- A child whose footprint meets the stamp it grows from, `alone` when no
+-- other stamp is in its way. A superforcing project grows it over its
+-- parent: the parent's parts in its way are replaced like any of the
+-- force's buildings (the map checks and the paste see to them, D54). Else a
+-- parent going for depletion is waited for, so the copy after a miner goes
+-- where the miner stood; and a parent staying means the child can never fit
+-- (its socket sits inside the parent). Another stamp in the way: joined.
+local function over_parent(project, parent, alone)
+  if project.superforce then
+    if alone then return nil end
+    return closed(REASON.joined)
+  end
+  if not depletion.going(parent) then return closed(REASON.overlaps_parent) end
+  if not alone then return closed(REASON.joined) end
+  return spots.gate(REASON.parent_retiring)
+end
+
+-- A child meeting no stamp fits; one meeting others than its parent joined.
 local function overlap(project, socket, footprint)
   local ids = footprints.overlapping(project.surface_index, footprint)
   if #ids == 0 then return nil end
@@ -94,18 +107,19 @@ local function overlap(project, socket, footprint)
     if id == socket.from then parent = storage.instances[id] end
   end
   if not parent then return closed(REASON.joined) end
-  if not depletion.going(parent) then return closed(REASON.overlaps_parent) end
-  if #ids > 1 then return closed(REASON.joined) end
-  return spots.gate(REASON.parent_retiring)
+  return over_parent(project, parent, #ids == 1)
 end
 
--- A plan mines nothing and opens a copy's sockets at once, so a copy that
--- would go once mined out (depletion.mined_out_goes) is planned as gone by
--- then: the copy that would wait for it is planned over it. Its id, or nil.
-local function gone_in_plan(project, socket)
-  if not project.rules.retire_depleted then return nil end
+-- A plan mines nothing and opens a copy's sockets at once. A child is
+-- planned over its planned parent where the real one would stand over it:
+-- the project superforces, or it retires depleted copies and the parent
+-- would be going once mined out (depletion.mined_out_goes). The parent's
+-- id, or nil.
+local function parent_gives_way(project, socket)
   local parent = socket.from and plan.get(project, socket.from)
-  return parent and parent.mined_out_goes and socket.from or nil
+  if not parent then return nil end
+  if project.superforce or (project.rules.retire_depleted and parent.mined_out_goes) then return socket.from end
+  return nil
 end
 
 -- Whether every corner of the footprint lies within `radius` of the seed.
@@ -133,7 +147,7 @@ local function check_rules(project, socket, footprint)
     return closed(REASON.outside_area)
   end
   if project.dry_run then
-    local hit = plan.overlaps(project, footprint, gone_in_plan(project, socket))
+    local hit = plan.overlaps(project, footprint, parent_gives_way(project, socket))
     if hit then return closed(hit == socket.from and REASON.overlaps_parent or REASON.joined) end
   end
   if rules.area and not geometry.contains_box(rules.area, footprint) then return closed(REASON.outside_area) end

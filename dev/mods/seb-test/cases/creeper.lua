@@ -42,22 +42,6 @@ local BELT = {
   rig.entry(2.5, 1.5, D.east),
 }
 
--- Power and a sink at the start: the first head drops onto a belt that
--- carries west into a loader and a chest, and its pole powers that head.
-local function start_line(surface, o)
-  local function make(name, x, y, extra)
-    local spec = { name = name, position = { o.x + x, o.y + y }, force = rig.FORCE }
-    for k, v in pairs(extra or {}) do spec[k] = v end
-    return surface.create_entity(spec)
-  end
-  local eei = make("electric-energy-interface", -4, -3)
-  eei.power_production, eei.electric_buffer_size = 1e9, 1e10
-  make("medium-electric-pole", -2.5, -0.5)
-  make("transport-belt", -0.5, 1.5, { direction = D.west })
-  make("loader-1x1", -1.5, 1.5, { direction = D.west, type = "input" })
-  return make("iron-chest", -2.5, 1.5)
-end
-
 -- One ore on each tile of the middle row of a line of heads at `y`, from
 -- x = 0 to `to` (a drill's ghost is refused without ore under it).
 local function ore(surface, y, to)
@@ -73,7 +57,7 @@ function case.setup(surface)
   rig.network(surface, rig.offset(o, -25, -25), STOCK)
   local c = { retired = {} }
   storage.creeper = c
-  c.chest = start_line(surface, o)
+  c.chest = rig.line_start(surface, o)
   ore(surface, 0, ORE_END)
   ore(surface, STAYS_Y, 3)
   ore(surface, PLAN_Y, 3 * HEADS)

@@ -1,4 +1,10 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.2.3
+Date: 2026-10-28
+  Features:
+    - With "Replace buildings in the way", a copy can grow over the copy it grows from. Its parts in the way are replaced like any of your buildings, so one blueprint can creep along its ore and lay its belt line behind it.
+    - A superforced copy leaves a part whose twin already stands there as it is, instead of refusing the spot.
+---------------------------------------------------------------------------------------------------
 Version: 0.2.2
 Date: 2026-10-27
   Features:
