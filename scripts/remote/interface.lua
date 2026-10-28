@@ -115,6 +115,14 @@ function interface.stop_project(project_id)
   return project ~= nil
 end
 
+-- Its blocked sockets (the reasons the map can stop being: a building,
+-- water, a probe...) are tried again; a finished project grows on. Returns
+-- how many, or nil for an unknown project.
+function interface.retry_project(project_id)
+  local project = storage.projects[project_id]
+  return project and projects.retry(project) or nil
+end
+
 -- params: force, surface, area (any of the three area forms), items (a list
 -- of item names: only what they build), cancel. Orders deconstruction of
 -- everything of the force in the area, trees and rocks included (or cancels

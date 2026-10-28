@@ -1,7 +1,7 @@
 -- The projects section: on a design's page one row per project of that
 -- design, on the front page those of deleted designs; each with a status
 -- light, its state and progress, why it waits or stalled, its history on
--- hover, and locate, pause, resume and stop buttons.
+-- hover, and locate, pause, resume, retry and stop buttons.
 -- Rows are updated in place, never rebuilt while a project grows: in
 -- multiplayer a click names its element, and a click on an element destroyed
 -- in the meantime is lost. Child names carry a prefix so that none shadows a
@@ -18,6 +18,7 @@ local frontier = require("scripts.core.frontier")
 local update_queue = require("scripts.core.update_queue")
 local designs_view = require("scripts.gui.designs_view")
 local project_text = require("scripts.gui.project_text")
+local retry = require("scripts.core.retry")
 
 local projects_view = {}
 
@@ -33,10 +34,12 @@ local function shown(project)
     and not updating
   local list = project.history or {}
   local last = list[#list]
+  local retries = retry.count(project)
   return {
     icon = designs_view.icon_sprite(design and design.icon), name = design and design.name or "?", status = s,
-    outdated = outdated, updating = updating,
+    outdated = outdated, updating = updating, retries = retries,
     key = table.concat({
+      retries,
       tostring(outdated), tostring(updating),
       s.level, s.reason or "", s.count or "", s.unreachable or "", s.item and s.item.name or "",
       s.item and s.item.have or "", project.count, project.building, frontier.pending(project),
@@ -90,6 +93,7 @@ local function add_row(rows, project, index)
   button(buttons, "proj_build", "utility/check_mark_green", "tool_button_green", "seb-gui.build-plan", "build-project", project)
   button(buttons, "proj_update", "utility/refresh", "tool_button", "seb-gui.update-project", "update-project", project)
   button(buttons, "proj_copies", "utility/list_view", "tool_button", "seb-gui.copies", "list-copies", project)
+  button(buttons, "proj_retry", "utility/reset", "tool_button", "seb-gui.retry-project", "retry-project", project)
   button(buttons, "proj_stop", "utility/close", "tool_button_red", "seb-gui.stop", "stop-project", project)
   return frame
 end
@@ -118,6 +122,14 @@ local function update_row(frame, project)
   buttons.proj_build.visible = plan_only
   buttons.proj_build.enabled = state == const.PROJECT_STATE.finished
   buttons.proj_update.visible = s.outdated
+  -- Retry keeps its slot, disabled with nothing to try, so stop never
+  -- slides under a click aimed at it. A row drawn before the button existed
+  -- has none until the window redraws.
+  local retry_button = buttons.proj_retry
+  if retry_button then
+    retry_button.enabled = s.retries > 0
+    retry_button.tooltip = s.retries > 0 and { "seb-gui.retry-project", s.retries } or { "seb-gui.retry-none" }
+  end
 end
 
 -- Whether the project belongs in the player's window: on a design's page,

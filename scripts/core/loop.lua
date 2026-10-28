@@ -21,12 +21,14 @@ local events = require("scripts.remote.events")
 local registry = require("scripts.core.registry")
 local pace = require("scripts.core.pace")
 local holds = require("scripts.core.holds")
+local retry = require("scripts.core.retry")
 
 local loop = {}
 
 -- changed(project): set by projects.lua so open windows refresh.
 -- ended(project): a real project finished, set by projects.lua (retention).
--- nothing_built(project): it finished without a copy, set by tool.lua.
+-- nothing_built(project): it finished without a copy, set by tool.lua; called
+-- last, once the rest is done with the project, as it may forget it.
 loop.hooks = {}
 
 local STATE = const.PROJECT_STATE
@@ -67,7 +69,9 @@ local function record_close(project, socket, result)
   if not MARKED[result.reason] then return end
   local position = result.position or socket.position
   local blocked = project.blocked
-  blocked[#blocked + 1] = { position = position, reason = result.reason }
+  local entry = { position = position, reason = result.reason }
+  blocked[#blocked + 1] = entry
+  retry.keep(project, socket, entry)
   if #blocked > const.MAX_BLOCKED_KEPT then table.remove(blocked, 1) end
   history.add(project, { kind = "blocked", reason = result.reason, position = position })
   if project.gates.notify then
@@ -104,7 +108,6 @@ local function nothing_built(project)
     if n > most then best, most = reason, n end
   end
   project.nothing_built = { reason = best, position = project.seed_position }
-  if loop.hooks.nothing_built then loop.hooks.nothing_built(project) end
 end
 
 -- Done when nothing is open, building, or waiting for its ore to run out.
@@ -246,6 +249,7 @@ local function advance(project)
   overlay.refresh_project(project)
   changed(project)
   if finished and not project.dry_run and loop.hooks.ended then loop.hooks.ended(project) end
+  if finished and project.count == 0 and loop.hooks.nothing_built then loop.hooks.nothing_built(project) end
 end
 
 pace.hooks.advance = advance

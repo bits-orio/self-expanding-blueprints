@@ -83,7 +83,7 @@ function retention.let_go(project, keep_drills)
   end
 end
 
-local function forget(project)
+function retention.forget(project)
   retention.let_go(project, project.state == STATE.finished)
   local waiting = storage.chunk_waits[project.surface_index]
   if waiting then waiting[project.id] = nil end
@@ -99,7 +99,7 @@ function retention.prune(force_index)
   local list = projects_where(force_index, ended)
   local gone = {}
   for i = 1, #list - keep do
-    forget(list[i])
+    retention.forget(list[i])
     gone[i] = list[i]
   end
   return gone

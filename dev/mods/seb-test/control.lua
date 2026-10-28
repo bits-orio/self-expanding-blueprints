@@ -65,6 +65,7 @@ local CASES = {
   require("cases.vanish"),
   require("cases.personal"),
   require("cases.seeds"),
+  require("cases.retry"),
 }
 
 local START_TICK = 60

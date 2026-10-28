@@ -4,7 +4,8 @@
 --                       where its ghosts show (scripts/tool.lua)
 --   seb-grow-tool       the area tool (Fill an area): a drag fills the
 --                       rectangle, a click grows from there, a right-drag
---                       retires the instances it touches
+--                       retires the instances it touches, a Shift +
+--                       right-drag tries the blocked sockets under it again
 --   seb-sensor-tool, seb-keep-clear-tool
 --                       the marker tools: click or drag marks tiles,
 --                       right-click or right-drag takes the marks off
@@ -41,7 +42,7 @@ data:extend({
     select = mode({ r = 0.30, g = 0.75, b = 0.35 }, "copy"),
     alt_select = mode({ r = 0.30, g = 0.75, b = 0.35 }, "copy"),
     reverse_select = mode({ r = 0.85, g = 0.28, b = 0.25 }, "not-allowed"),
-    alt_reverse_select = mode({ r = 0.85, g = 0.28, b = 0.25 }, "not-allowed"),
+    alt_reverse_select = mode({ r = 0.95, g = 0.70, b = 0.24 }, "copy"),
   },
   -- Click a tile, drag a rectangle: ore sensors on it (marker_tools.lua).
   {

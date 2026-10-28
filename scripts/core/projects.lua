@@ -21,6 +21,7 @@ local update_queue = require("scripts.core.update_queue")
 local limits = require("scripts.core.limits")
 local instances = require("scripts.core.instances")
 local retention = require("scripts.core.retention")
+local retry = require("scripts.core.retry")
 
 local projects = {}
 
@@ -48,6 +49,7 @@ local function ended(project)
   end
 end
 loop.hooks.ended = ended
+retry.hooks.changed = changed
 
 -- What started a project (plain data), kept so a dry run can be built as
 -- planned.
@@ -230,6 +232,19 @@ function projects.stop(project)
   loop.wake_force(project.force_index)
   changed(project)
   ended(project)
+end
+
+-- A project that came to nothing goes at once, row and all; the player was
+-- told why (tool.lua).
+function projects.discard(project)
+  retention.forget(project)
+  project.shown_key = nil
+  changed(project)
+end
+
+-- Its blocked sockets go back to the frontier (retry.lua).
+function projects.retry(project, player)
+  return retry.project(project, player)
 end
 
 function projects.list(force_index)

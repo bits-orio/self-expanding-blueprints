@@ -229,6 +229,13 @@ function frontier.release(project, id)
   return true
 end
 
+-- Sockets closed once go to the back of the frontier, to be tried again
+-- (retry.lua).
+function frontier.reopen(project, sockets)
+  indexed(project)
+  for _, socket in ipairs(sockets) do push(project, socket) end
+end
+
 -- Open sockets not yet tried for good, parked and waiting ones included.
 function frontier.pending(project)
   return #project.frontier + #project.parked + #(project.awaiting or {})

@@ -2,8 +2,9 @@
 -- the cursor (grow_cursor.lua): its ghosts follow the pointer, and a click
 -- grows the first copy exactly where they showed; the design comes back into
 -- the hand, so each click starts another project. The area tool, a button of
--- its own, fills a dragged rectangle (a click on it grows from there too), and
--- a right-drag retires the instances it touches. Works from map and remote
+-- its own, fills a dragged rectangle (a click on it grows from there too), a
+-- right-drag retires the instances it touches, and a Shift + right-drag tries
+-- the blocked sockets under it again (retry.lua). Works from map and remote
 -- view: the surface acted on is the one the player looks at.
 
 local const = require("scripts.const")
@@ -20,6 +21,7 @@ local grow_cursor = require("scripts.grow_cursor")
 local twins = require("scripts.core.twins")
 local loop = require("scripts.core.loop")
 local outlines = require("scripts.gui.outlines")
+local retry = require("scripts.core.retry")
 
 local tool = {}
 
@@ -202,6 +204,21 @@ function tool.on_reverse_selected(event)
   if player then retire(player, event) end
 end
 
+-- A Shift + right-drag: the force's blocked sockets under it are tried again.
+function tool.on_alt_reverse_selected(event)
+  local player = player_of(event)
+  if not player then return end
+  local box = geometry.from_area(event.area)
+  -- A click covers the mark it lands on.
+  local size = geometry.box_size(box)
+  if size.x < CLICK_SIZE and size.y < CLICK_SIZE then
+    local c = geometry.box_center(box)
+    box = geometry.box(c.x - 1, c.y - 1, c.x + 1, c.y + 1)
+  end
+  local n = retry.area(player.force.index, event.surface.index, box, player)
+  cursor.say(player, { "seb-message.retrying", n })
+end
+
 -- How a paste turned the design: its facing, and whether it is the mirror
 -- image. A horizontal flip is the mirror facing the same way, a vertical one
 -- the mirror half a turn further, and both only half a turn (measured against
@@ -234,6 +251,21 @@ scheduler.register("refill-hand", function(item)
   state.tool_design, state.held = design.id, holds
 end)
 
+-- Changing view (remote view and back) the engine swaps a design in hand,
+-- an item only a cursor holds, for its ghost, which pastes nothing: the
+-- design goes back in the hand, turned and flipped as it was.
+function tool.on_view_changed(player)
+  local ghost = player.cursor_ghost
+  if not (ghost and ghost.name and ghost.name.name == const.GROW_BLUEPRINT) then return end
+  local state = registry.player(player.index)
+  local design = state.tool_design and library.get(player.force.index, state.tool_design)
+  player.cursor_ghost = nil
+  local stack = design and player.cursor_stack
+  if not stack then return end
+  local holds = grow_cursor.write(stack, design, state.held)
+  if holds then state.held = holds end
+end
+
 -- The turn and flip of a paste of what the hand held, itself turned and
 -- flipped as `held`: the paste's own on top (a flip turns the other way).
 local function combined(held, direction, mirrored)
@@ -265,17 +297,22 @@ function tool.on_pre_build(event)
 end
 
 -- A project the player started that ended before building anything: they
--- are told why, with a map link to where it began.
+-- are told why at the cursor and in chat, with a map link to where it began,
+-- and the project goes, so there is no row left to delete.
 loop.hooks.nothing_built = function(project)
-  local player = project.player_index and game.get_player(project.player_index)
-  if not (player and player.connected) then return end
-  local note, surface = project.nothing_built, game.get_surface(project.surface_index)
-  local at = note.position
-  local gps = (at and surface) and string.format("[gps=%d,%d,%s]", math.floor(at.x), math.floor(at.y), surface.name) or ""
-  local design = library.get(project.force_index, project.design_id)
-  local why = note.reason and { "seb-reason." .. note.reason } or ""
-  local key = project.dry_run and "seb-message.nothing-planned" or "seb-message.nothing-built"
-  player.print({ key, project.id, design and design.name or "?", why, gps })
+  if not project.player_index then return end
+  local player = game.get_player(project.player_index)
+  if player and player.connected then
+    local note, surface = project.nothing_built, game.get_surface(project.surface_index)
+    local at = note.position
+    local gps = (at and surface) and string.format("[gps=%d,%d,%s]", math.floor(at.x), math.floor(at.y), surface.name) or ""
+    local design = library.get(project.force_index, project.design_id)
+    local why = note.reason and { "seb-reason." .. note.reason } or ""
+    local key = project.dry_run and "seb-message.nothing-planned" or "seb-message.nothing-built"
+    cursor.say(player, { "seb-message.nothing-grew", why })
+    player.print({ key, design and design.name or "?", why, gps })
+  end
+  projects.discard(project)
 end
 
 return tool

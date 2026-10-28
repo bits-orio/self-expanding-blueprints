@@ -10,6 +10,7 @@ local gallery = require("scripts.core.gallery")
 local budget = require("scripts.core.budget")
 local pace = require("scripts.core.pace")
 local limits = require("scripts.core.limits")
+local retry = require("scripts.core.retry")
 local builder = require("scripts.circuit.builder")
 
 local lifecycle = {}
@@ -38,6 +39,7 @@ function lifecycle.drop_surface(surface_index)
   local lost = projects.drop_where(function(project) return project.surface_index == surface_index end)
   instances.drop_where(function(instance) return instance.surface_index == surface_index end)
   footprints.drop_surface(surface_index)
+  retry.drop_surface(surface_index)
   storage.chunk_waits[surface_index] = nil
   -- no sweep: every registered object on the surface fires on_object_destroyed
   -- and removes its own entry

@@ -15,6 +15,7 @@ local KEEP = 10
 --   paused, resumed {player_index} finished {copies}
 --   waiting-ore, ore-gone, depleted {instance_id}   (ore sensors, retirement)
 --   updated {copies, refused, player_index}         built-plan {player_index}
+--   retried {count, player_index}   blocked sockets tried again (retry.lua)
 --   replaced {limit}   a plan stopped for a newer one (the force keeps
 --                      `limit` live plans, retention.lua)
 -- A repeat of the newest entry (same kind, reason and item) takes the new

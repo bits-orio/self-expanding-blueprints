@@ -126,6 +126,7 @@ local WORDS = {
   depleted = function() return { "seb-history.depleted" } end,
   ["built-plan"] = function(e) return { "seb-history.built-plan", who(e) } end,
   replaced = function(e) return { "seb-history.replaced", e.limit or "?" } end,
+  retried = function(e) return { "seb-history.retried", e.count or 0, who(e) } end,
   updated = function(e) return { "seb-history.updated", e.copies or 0, e.refused or 0 } end,
 }
 

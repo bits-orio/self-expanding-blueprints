@@ -30,6 +30,7 @@ local builder = require("scripts.circuit.builder")
 local builder_view = require("scripts.gui.builder_view")
 local help_view = require("scripts.gui.help_view")
 local outlines = require("scripts.gui.outlines")
+local retry = require("scripts.core.retry")
 require("scripts.remote.interface")
 
 projects.hooks.changed = window.refresh_project
@@ -95,7 +96,15 @@ script.on_event(defines.events.on_object_destroyed, function(event)
   tracking.on_object_destroyed(event)
 end)
 script.on_event(defines.events.on_post_entity_died, tracking.on_post_entity_died)
-script.on_event({ defines.events.on_robot_mined_entity, defines.events.on_player_mined_entity }, tracking.on_mined)
+script.on_event({ defines.events.on_robot_mined_entity, defines.events.on_player_mined_entity }, function(event)
+  tracking.on_mined(event)
+  retry.on_entity_removed(event)
+end)
+-- What leaves the map frees the blocked spots under it (retry.lua).
+script.on_event({ defines.events.on_entity_died, defines.events.script_raised_destroy }, retry.on_entity_removed)
+script.on_event({ defines.events.on_player_built_tile, defines.events.on_robot_built_tile,
+  defines.events.script_raised_set_tiles }, retry.on_tiles_built)
+script.on_event(defines.events.on_chunk_charted, retry.on_chunk_charted)
 script.on_event(defines.events.on_player_setup_blueprint, tracking.on_player_setup_blueprint)
 
 -- The area tool's outlines are drawn again after a drag: a right-drag
@@ -119,7 +128,11 @@ end
 script.on_event(defines.events.on_player_selected_area, on_selected)
 script.on_event(defines.events.on_player_alt_selected_area, on_selected)
 script.on_event(defines.events.on_player_reverse_selected_area, on_reverse_selected)
-script.on_event(defines.events.on_player_alt_reverse_selected_area, on_reverse_selected)
+script.on_event(defines.events.on_player_alt_reverse_selected_area, function(event)
+  tool.on_alt_reverse_selected(event)
+  marker_tools.on_reverse_selected(event)
+  redraw_outlines(event)
+end)
 script.on_event(defines.events.on_pre_build, tool.on_pre_build)
 
 -- Window
@@ -154,6 +167,14 @@ script.on_event(defines.events.on_gui_location_changed, help_view.on_location_ch
 script.on_event(defines.events.on_gui_selected_tab_changed, help_view.on_tab_changed)
 script.on_event(defines.events.on_gui_hover, actions.on_hover)
 script.on_event(defines.events.on_gui_leave, actions.on_leave)
+-- Entering or leaving remote view: the window stays open and a design in
+-- hand stays in hand.
+script.on_event(defines.events.on_player_controller_changed, function(event)
+  local player = game.get_player(event.player_index)
+  if not player then return end
+  window.on_view_changed(player)
+  tool.on_view_changed(player)
+end)
 script.on_event(defines.events.on_player_cursor_stack_changed, function(event)
   local player = game.get_player(event.player_index)
   if not player then return end
@@ -192,7 +213,10 @@ script.on_event(defines.events.on_player_joined_game, function(event)
   if player then window.refresh(player) end
 end)
 script.on_event(defines.events.on_chunk_generated, loop.on_chunk_generated)
-script.on_event(defines.events.on_resource_depleted, depletion.on_resource_depleted)
+script.on_event(defines.events.on_resource_depleted, function(event)
+  depletion.on_resource_depleted(event)
+  retry.on_entity_removed(event)
+end)
 script.on_event(defines.events.on_research_finished, research.on_research_finished)
 script.on_event(defines.events.on_player_removed, function(event)
   registry.drop_player(event.player_index)

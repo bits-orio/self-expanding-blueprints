@@ -43,6 +43,7 @@ fi
 "$FACTORIO" --config "$RUN/config.ini" --create "$RUN/world.zip" --mod-directory "$RUN/mods" --map-gen-seed 1 > "$RUN/create.log" 2>&1 \
   || { tail -20 "$RUN/create.log"; exit 1; }
 vdisplay_start "$RUN" "$SIZE" || exit 1
+# No sound: a client on a private display must not play on the desktop's speakers.
 nohup "$FACTORIO" --config "$RUN/config.ini" --mod-directory "$RUN/mods" --load-game "$RUN/world.zip" \
-  --window-size "$SIZE" > "$RUN/client.log" 2>&1 &
+  --window-size "$SIZE" --disable-audio > "$RUN/client.log" 2>&1 &
 echo $! > "$RUN/pid"; echo "pid=$(cat "$RUN/pid") display=$DISPLAY"

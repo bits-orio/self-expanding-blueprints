@@ -128,6 +128,7 @@ local click = {
   ["pause-project"] = with_project(projects.pause),
   ["resume-project"] = with_project(projects.resume),
   ["stop-project"] = with_project(projects.stop),
+  ["retry-project"] = with_project(projects.retry),
   ["build-project"] = with_project(projects.build),
   ["list-copies"] = with_project(function(project, player) copies_view.open(player, project) end),
   ["close-copies"] = function(player) copies_view.close(player) end,
@@ -282,7 +283,7 @@ function actions.on_closed(event)
   local player = game.get_player(event.player_index)
   if not player then return end
   local name = element.name
-  if name == window.NAME and not window.kept(player) then window.close(player) end
+  if name == window.NAME and not window.kept(player) then window.on_closed(player) end
   if name == copies_view.NAME then copies_view.close(player) end
 end
 

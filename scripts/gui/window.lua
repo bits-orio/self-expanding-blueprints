@@ -17,6 +17,7 @@ local preview = require("scripts.gui.preview")
 local outlines = require("scripts.gui.outlines")
 local layout = require("scripts.gui.layout")
 local copies_view = require("scripts.gui.copies_view")
+local scheduler = require("scripts.core.scheduler")
 
 local window = {}
 
@@ -129,6 +130,35 @@ end
 
 function window.kept(player)
   return keeping == player.index
+end
+
+-- Factorio also closes what a player has open when they enter or leave
+-- remote view. Whichever of the close and the view change comes first, the
+-- second of the same tick undoes the close: the window stays where it was,
+-- and is the player's open window again next tick (set within the change,
+-- it does not hold), so Escape still closes it.
+local function keep_after_view_change(player)
+  if not frame_of(player) then window.open(player) end
+  scheduler.at(game.tick + 1, { kind = "window-opened", player_index = player.index })
+end
+
+scheduler.register("window-opened", function(item)
+  local player = game.get_player(item.player_index)
+  local frame = player and frame_of(player)
+  if frame and player.opened ~= frame then player.opened = frame end
+end)
+
+function window.on_closed(player)
+  local state = registry.player(player.index)
+  if state.view_changed_tick == game.tick then return keep_after_view_change(player) end
+  if frame_of(player) then state.window_closed_tick = game.tick end
+  window.close(player)
+end
+
+function window.on_view_changed(player)
+  local state = registry.player(player.index)
+  state.view_changed_tick = game.tick
+  if state.window_closed_tick == game.tick then keep_after_view_change(player) end
 end
 
 function window.toggle(player)

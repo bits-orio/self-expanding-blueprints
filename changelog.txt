@@ -1,4 +1,14 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.2.6
+Date: 2026-10-28
+  Features:
+    - Blocked spots can be tried again. A spot stopped by something that can go away (a building, tree or rock, a cliff, water, a probe that did not hold, enemies, uncharted land) keeps its red mark and is tried again on its own once something there is mined or destroyed, landfilled or charted; a finished project grows on from it. By hand: the Retry button on the project's row, or Shift + right-drag the area tool over the marks.
+  Changes:
+    - A project you start that builds nothing is not kept: why it failed shows at the cursor and in chat with a map link, and there is no row left to delete.
+  Bugfixes:
+    - Growing in remote view: the design in hand turned into a ghost on entering remote view and pasted nothing. It now stays in hand.
+    - The window closed whenever you entered or left remote view. It now stays open; Escape still closes it.
+---------------------------------------------------------------------------------------------------
 Version: 0.2.5
 Date: 2026-10-28
   Features:
