@@ -82,12 +82,15 @@ echo "::endgroup::"
 echo "::group::Step 2 — upload zip"
 # A first publish seeds the new page from exactly the files that every later
 # sync deploys from -- docs/portal.md and tools/portal_meta.json -- so the page
-# never starts life as something the repo cannot reproduce.
+# never starts life as something the repo cannot reproduce. The publish
+# endpoint refuses title, summary and homepage ("Unknown field", HTTP 400):
+# the title and summary come from the zip's info.json, and the first sync
+# (sync_portal_details.sh) sets all three from portal_meta.json.
 PUBLISH_FIELDS=()
 if [[ "$MOD_EXISTS" -eq 0 ]]; then
     META=tools/portal_meta.json
     if [[ -f "$META" ]]; then
-        for field in title summary category license homepage source_url; do
+        for field in category license source_url; do
             value=$(jq -r --arg f "$field" '.[$f] // empty' "$META")
             [[ -n "$value" ]] && PUBLISH_FIELDS+=(--form-string "${field}=${value}")
         done
