@@ -26,7 +26,11 @@ jobs:
       FACTORIO_API_KEY: ${{ secrets.FACTORIO_API_KEY }}
       DISCORD_ANNOUNCEMENTS_WEBHOOK: ${{ secrets.DISCORD_ANNOUNCEMENTS_WEBHOOK }}
     steps:
+      # Tags are needed: the next step reads info.json at the release tag, and
+      # a shallow checkout has none (the mod name came out empty).
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Resolve tag
         id: tag
