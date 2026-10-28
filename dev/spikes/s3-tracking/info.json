@@ -1,0 +1,9 @@
+{
+  "name": "seb-spike-s3",
+  "version": "0.0.1",
+  "title": "SEB spike S3: tracking coverage",
+  "author": "bits-orio",
+  "factorio_version": "2.1",
+  "description": "Dev-only: S3 tracking coverage spike for Self-Expanding Blueprints. Never shipped.",
+  "dependencies": ["base >= 2.1", "? space-age"]
+}

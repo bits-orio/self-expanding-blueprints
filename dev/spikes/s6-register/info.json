@@ -1,0 +1,9 @@
+{
+  "name": "seb-spike-register",
+  "version": "0.0.1",
+  "title": "SEB spike: what registering a design costs",
+  "author": "bits-orio",
+  "factorio_version": "2.1",
+  "description": "Dev-only spike.",
+  "dependencies": ["base >= 2.1", "self-expanding-blueprints"]
+}

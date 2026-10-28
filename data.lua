@@ -1,0 +1,6 @@
+require("prototypes.markers")
+require("prototypes.tool")
+require("prototypes.sprites")
+require("prototypes.signals")
+require("prototypes.builder")
+require("prototypes.tips")

@@ -1,0 +1,9 @@
+{
+  "name": "seb-media-world",
+  "version": "0.0.1",
+  "title": "Self-Expanding Blueprints media world",
+  "author": "bits-orio",
+  "factorio_version": "2.1",
+  "description": "Dev-only: grass stages with robots, stock, lakes and the designs used to record the portal GIFs. Never shipped.",
+  "dependencies": ["base >= 2.1", "self-expanding-blueprints"]
+}

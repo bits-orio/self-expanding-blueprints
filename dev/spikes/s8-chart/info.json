@@ -1,0 +1,1 @@
+{ "name": "seb-spike-chart", "version": "0.0.1", "title": "SEB spike S8: charting in headless runs", "author": "seb", "factorio_version": "2.1", "dependencies": ["base"] }

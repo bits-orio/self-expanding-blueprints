@@ -1,0 +1,14 @@
+{
+  "mod": "self-expanding-blueprints",
+  "title": "Self-Expanding Blueprints (SEB)",
+  "summary": "Grow a self-expanding factory from your own blueprints. Draw arrows where the next piece attaches, and construction robots keep building copies until water, cliffs or your rules stop them. Each team on a multiplayer server grows its own. A Recursive Blueprints alternative with circuit control; Multi-Team Support (MTS) optional.",
+  "category": "content",
+  "tags": [
+    "blueprints",
+    "circuit-network",
+    "logistic-network"
+  ],
+  "license": "default_mit",
+  "homepage": "https://discord.gg/tWz4FT74pH",
+  "source_url": "https://github.com/bits-orio/self-expanding-blueprints"
+}

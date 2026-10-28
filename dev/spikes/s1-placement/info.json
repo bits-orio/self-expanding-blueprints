@@ -1,0 +1,9 @@
+{
+  "name": "seb-spike-s1",
+  "version": "0.0.1",
+  "title": "SEB spike S1 placement",
+  "author": "bits-orio",
+  "factorio_version": "2.1",
+  "description": "Dev-only: S1 placement spike (build_blueprint offsets, rotation, markers, obstacles, calibration, cost). Never shipped.",
+  "dependencies": ["base >= 2.1"]
+}

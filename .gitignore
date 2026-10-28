@@ -1,0 +1,17 @@
+# Third-party mod code kept for local reference only (see reference/README.md).
+# Several of those licences forbid redistribution, so this folder is never committed.
+/reference/
+
+# Editor workspace files
+*.code-workspace
+
+# Local test rig (saves, mods symlinks, spike/test run logs)
+/.run/
+
+# Build output
+/build/
+/*.zip
+
+# Python bytecode from tools/
+__pycache__/
+*.pyc

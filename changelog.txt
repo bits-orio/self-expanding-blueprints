@@ -1,0 +1,32 @@
+---------------------------------------------------------------------------------------------------
+Version: 0.2.0
+Date: 2026-10-27
+  Major Features:
+    - Designs: add the blueprint in your hand, or every blueprint of a book, as a named design of your team. A blueprint added under a taken name becomes that design's next version.
+    - Grow: the design comes into your hand, its ghosts inside a dashed frame. Click where the first copy goes, and construction robots keep building copies until water, cliffs, buildings, uncharted land or your count stop them. Turn or flip it as any blueprint, and the whole growth turns or flips with it.
+    - Fill an area: drag a rectangle, and copies fill it from the corner you started at toward where you let go.
+    - Socket and plug arrows drawn into a design say where the next copy attaches and which way it faces. A socket can name another design, or a labelled book of designs, of which the first that fits is built.
+    - Every copy goes down whole or not at all and is tracked until its robots finish. It can be updated to a newer version of its design, or removed: exactly what it built, tiles included, and nothing next to it.
+    - Plan only: a project laid out as outlines first, with every check and no ghosts; grow it for real from its row.
+    - Ore sensors make the copies of a mining design wait until the ore where a sensor looks has run out, and copies whose drills have run dry can be removed. Probes keep copies to the right ground: some ore, a named ore, water, or the opposite.
+    - Keep clear: tiles a build needs empty, inside it or past its edge. Copies keep off them, and trees and rocks there are cleared.
+    - The materials gate holds the next copy until the construction network covering it has everything it costs.
+  Features:
+    - Projects say why they wait or stopped: a status light, what holds them in plain words, their recent history on hover, and their copies outlined on the map while you hover their row. One that ends without building anything says why and where, on its row and in chat to whoever started it, and growing from a spot copies already cover is refused.
+    - Updates in place keep the parts a new version shares. Name a research on a design, and its copies update when your team finishes it.
+    - Space platforms: projects grow on platforms, built by the hub from its own inventory.
+    - Fast fill, Replace buildings in the way, and, through the remote interface, project order and rules (radius, distance from enemies, no landfill).
+    - Once your team has researched cliff explosives, the robots blow up a cliff in a copy's way.
+    - Water, lava and space stop a copy unless its design lays its own floor there; with Replace buildings in the way, or a Ctrl + Shift click with the design, the copy is built on the floor it needs (landfill, foundation, ice platform) once your team can make it, and growth waits for that floor.
+    - Take every design as one blueprint book, to keep or to add in another save.
+    - A "Seed only" challenge scenario, and 21 Tips and Tricks entries, each with a simulation that runs the mod.
+  Circuit Network:
+    - The blueprint builder: a combinator that takes circuit requests (Stamp, Grow, Remove, Clear, Sense, Find, Capture, Upgrade, and Read and Write a copy's port) with named signals, and answers with accepted, done or failed and a named error.
+  Gui:
+    - The window lists your team's designs. A design's page has its grow options, an editable name, and only its projects, each with locate, pause, update, copies and stop. "How growing works" explains each marker with a picture.
+    - While you hold a design from Grow or the area tool, your team's copies around you are outlined; a copy whose buildings were removed by hand is outlined red and named until a right-drag with the area tool retires it. A paste over copies already there names them and flashes them on the map.
+  Compatibility:
+    - Multiplayer: designs, projects and copies belong to a team (a force), so every Multi-Team Support team grows its own. Each team's work is charged to its own share of server time and the server's total is capped; map settings set every limit, per team if needed.
+    - Land Title Registry: a stamp refused for land the team does not hold says so. AI Agent Bridge: read tools, and, when an admin allows it, tools to grow, pause, resume and stop projects. Negative Space's markers in a design work as Keep clear.
+  Modding:
+    - Remote interface "self-expanding-blueprints" and custom events, a draft until version 1.

@@ -1,0 +1,9 @@
+{
+  "name": "seb-gui-world",
+  "version": "0.0.1",
+  "title": "Self-Expanding Blueprints GUI world",
+  "author": "bits-orio",
+  "factorio_version": "2.1",
+  "description": "Dev-only: a lab world with robots and stock for driving the Self-Expanding Blueprints GUI. Never shipped.",
+  "dependencies": ["base >= 2.1", "self-expanding-blueprints"]
+}

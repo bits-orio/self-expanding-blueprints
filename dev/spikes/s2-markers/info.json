@@ -1,0 +1,9 @@
+{
+  "name": "seb-spike-s2",
+  "version": "0.0.1",
+  "title": "SEB spike S2: marker settings",
+  "author": "bits-orio",
+  "factorio_version": "2.1",
+  "description": "Dev-only: where socket and entry marker settings can live (combinator signals and description vs blueprint entity tags). Never shipped.",
+  "dependencies": ["base >= 2.1"]
+}

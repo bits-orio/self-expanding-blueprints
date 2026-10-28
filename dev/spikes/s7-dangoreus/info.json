@@ -1,0 +1,9 @@
+{
+  "name": "seb-spike-dangoreus",
+  "version": "0.0.1",
+  "title": "SEB spike: markers under dangOreus",
+  "author": "bits-orio",
+  "factorio_version": "2.1",
+  "description": "Dev-only spike: markers survive on ore under dangOreus, a drill design with a sensor on ore grows.",
+  "dependencies": ["base >= 2.1", "self-expanding-blueprints", "dangOreus"]
+}

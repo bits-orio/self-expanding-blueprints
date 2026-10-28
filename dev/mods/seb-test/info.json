@@ -1,0 +1,9 @@
+{
+  "name": "seb-test",
+  "version": "0.0.1",
+  "title": "Self-Expanding Blueprints tests",
+  "author": "bits-orio",
+  "factorio_version": "2.1",
+  "description": "Dev-only: headless contract, growth and retirement tests for Self-Expanding Blueprints, driven by dev/run-tests.sh. Never shipped.",
+  "dependencies": ["base >= 2.1", "self-expanding-blueprints", "? space-age", "? quality"]
+}
