@@ -1,7 +1,7 @@
 {
   "name": "self-expanding-blueprints",
-  "version": "0.2.0",
-  "title": "Self-Expanding Blueprints (SEB)",
+  "version": "0.2.1",
+  "title": "Self-Expanding Blueprints: Recursive Blueprint Growth (SEB)",
   "author": "bits-orio",
   "factorio_version": "2.1",
   "dependencies": [
@@ -10,5 +10,5 @@
     "? multi-team-support",
     "? land-title-registry"
   ],
-  "description": "Grow a self-expanding factory from your own blueprints. Draw arrows where the next piece attaches, and construction robots keep building copies until water, cliffs or your rules stop them. Each team on a multiplayer server grows its own. A Recursive Blueprints alternative with circuit control; Multi-Team Support (MTS) optional."
+  "description": "Grow a self-expanding factory from your own blueprints, with the recursion drawn into the blueprint itself. Draw arrows where the next piece attaches, and construction robots keep building copies until water, cliffs or your rules stop them. Each team on a multiplayer server grows its own. A Recursive Blueprints alternative with circuit control; Multi-Team Support (MTS) optional."
 }

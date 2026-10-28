@@ -1,7 +1,7 @@
 {
   "mod": "self-expanding-blueprints",
-  "title": "Self-Expanding Blueprints (SEB)",
-  "summary": "Grow a self-expanding factory from your own blueprints. Draw arrows where the next piece attaches, and construction robots keep building copies until water, cliffs or your rules stop them. Each team on a multiplayer server grows its own. A Recursive Blueprints alternative with circuit control; Multi-Team Support (MTS) optional.",
+  "title": "Self-Expanding Blueprints: Recursive Blueprint Growth (SEB)",
+  "summary": "Grow a self-expanding factory from your own blueprints, with the recursion drawn into the blueprint itself. Draw arrows where the next piece attaches, and construction robots keep building copies until water, cliffs or your rules stop them. Each team on a multiplayer server grows its own. A Recursive Blueprints alternative with circuit control; Multi-Team Support (MTS) optional.",
   "category": "content",
   "tags": [
     "blueprints",
