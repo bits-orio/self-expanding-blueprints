@@ -22,6 +22,7 @@ local budget = require("scripts.core.budget")
 local library = {}
 
 -- hooks.new_version(design): twins.lua's, once a design took a new version.
+-- hooks.deleted(design): lifecycle.lua's, as a design (or its twin) goes.
 library.hooks = {}
 
 local GROW_SLOTS = 10
@@ -271,6 +272,7 @@ function library.delete(design)
   local lib = storage.libraries[design.force_index]
   local twin = design.twin_id and lib.designs[design.twin_id]
   if twin then library.delete(twin) end
+  if library.hooks.deleted then library.hooks.deleted(design) end
   lib.inventory[design.slot].clear()
   if design.stamp_slot then lib.inventory[design.stamp_slot].clear() end
   if design.hidden then

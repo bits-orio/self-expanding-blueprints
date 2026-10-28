@@ -1,6 +1,6 @@
 -- The remote interface's design functions (docs/remote-interface.md):
 -- registering blueprints and books, listing designs and pools, exporting
--- the library, and naming a design's upgrade research.
+-- the library, deleting a design, and naming a design's upgrade research.
 
 local library = require("scripts.core.library")
 local books = require("scripts.core.books")
@@ -100,6 +100,17 @@ return function(interface)
     local rows = {}
     for i, design in ipairs(library.list(f.index)) do rows[i] = design_row(design) end
     return rows
+  end
+
+  -- Deletes a design (and its mirror twin): its projects end and its copies
+  -- are forgotten, their buildings left standing (lifecycle.lua).
+  function interface.delete_design(force, design)
+    local f = lookup.force(force)
+    if not f then return false, "unknown-force" end
+    local d = lookup.design(f.index, design)
+    if not d or d.hidden then return false, "unknown-design" end
+    library.delete(d)
+    return true
   end
 
   -- Names the technology whose research moves a design's copies to its newest

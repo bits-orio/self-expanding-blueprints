@@ -58,6 +58,7 @@ local CASES = {
   require("cases.fix_server"),
   require("cases.water"),
   require("cases.water_floors"),
+  require("cases.delete_design"),
 }
 
 local START_TICK = 60

@@ -44,6 +44,19 @@ function lifecycle.drop_surface(surface_index)
   if next(lost) then dropped(lost) end
 end
 
+-- A design deleted from its team's library: its projects end and are
+-- forgotten, and so are its copies, whose ground is free again. What they
+-- built stays in the world, as for a dropped surface or force.
+library.hooks.deleted = function(design)
+  local force_index, id = design.force_index, design.id
+  local function of_design(record) return record.force_index == force_index and record.design_id == id end
+  projects.drop_where(of_design)
+  instances.drop_where(of_design)
+  sweep_registrations()
+  -- The list of designs changed too: whole windows redraw.
+  dropped(nil)
+end
+
 -- The force's builders end their requests first, so none runs on against
 -- records that are gone. Its share of server time (and its projects' line
 -- for it) and its own limits go too: a new force may get its index.
