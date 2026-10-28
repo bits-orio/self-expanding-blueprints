@@ -10,6 +10,8 @@ local const = require("scripts.const")
 local overlay = require("scripts.render.overlay")
 local retention = require("scripts.core.retention")
 local forgetting = require("scripts.core.forgetting")
+local instances = require("scripts.core.instances")
+local tracking = require("scripts.core.tracking")
 
 local migrations = {}
 
@@ -80,6 +82,19 @@ local function mark_watched_drills()
   end
 end
 
+-- A copy whose parts were all removed is released by its recount (D55).
+-- One emptied before 0.2.4 is recounted once.
+local function recount_emptied()
+  local STATE = const.STATE
+  for _, instance in pairs(storage.instances) do
+    local state = instance.state
+    if state ~= STATE.retiring and state ~= STATE.retired and (instance.expected or 0) > 0
+      and instances.built_entities(instance) == 0 then
+      tracking.mark_dirty(instance)
+    end
+  end
+end
+
 function migrations.run()
   forgetting.sweep()
   fill_projects()
@@ -89,6 +104,7 @@ function migrations.run()
   mark_watched_drills()
   forget_old_projects()
   attach_prepared()
+  recount_emptied()
 end
 
 return migrations

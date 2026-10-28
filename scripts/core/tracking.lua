@@ -116,6 +116,14 @@ local function adopt_unannounced(surface, instance)
   end)
 end
 
+-- Nothing of the copy stands or waits to be built: its parts were removed
+-- by hand, say, or by another mod. Not a copy that placed no entity (tiles
+-- only), one being updated, or one already gone.
+local function emptied(instance, left)
+  return left == 0 and (instance.expected or 0) > 0 and not instance.updating
+    and instance.state ~= STATE.retired and instances.built_entities(instance) == 0
+end
+
 function tracking.recount(instance)
   local surface = game.surfaces[instance.surface_index]
   if not surface then return end
@@ -126,7 +134,9 @@ function tracking.recount(instance)
   if left == 0 and instances.is_building(instance) and instances.built_entities(instance) < instance.expected then
     adopt_unannounced(surface, instance)
   end
-  instances.counted(instance, left + count_requests(surface, instance))
+  left = left + count_requests(surface, instance)
+  if emptied(instance, left) then return instances.release(instance) end
+  instances.counted(instance, left)
 end
 
 scheduler.register("recount", function(item, now)
@@ -203,7 +213,11 @@ function tracking.on_object_destroyed(event)
   if not id then return end
   storage.entity_regs[reg] = nil
   local instance = storage.instances[id]
-  if instance then instances.entity_gone(instance, event.useful_id) end
+  if not instance then return end
+  instances.entity_gone(instance, event.useful_id)
+  -- A copy losing a part it was not asked to remove may have nothing left:
+  -- its recount says, and releases it (instances.release).
+  if instance.state ~= STATE.retiring and instance.state ~= STATE.retired then tracking.mark_dirty(instance) end
 end
 
 -- An entity of ours died and left a ghost: tag the ghost so the rebuilt

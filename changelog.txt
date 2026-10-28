@@ -1,4 +1,9 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.2.4
+Date: 2026-10-28
+  Bugfixes:
+    - A copy whose buildings and ghosts were all removed, by hand or otherwise, no longer holds its spot: it is forgotten, and growing there works again. Anything it leaves behind, such as tiles, stays. Copies emptied before this update are released when the save loads.
+---------------------------------------------------------------------------------------------------
 Version: 0.2.3
 Date: 2026-10-28
   Features:

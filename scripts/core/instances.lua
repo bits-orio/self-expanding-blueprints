@@ -191,6 +191,15 @@ local function finish_retire(instance)
   forgetting.after_retire(instance)
 end
 
+-- A copy with nothing of it left (tracking.lua) leaves as if retired and
+-- removes nothing: its spot is free, and any tiles it laid stay (D55).
+function instances.release(instance)
+  local was_building = building(instance)
+  instances.set_state(instance, STATE.retiring)
+  if was_building then settle(instance, "incomplete") end
+  finish_retire(instance)
+end
+
 -- Retired once no entity of it stands and no tile of it awaits removal.
 function instances.check_retired(instance, tile_proxies_left)
   instance.tile_proxies_left = tile_proxies_left

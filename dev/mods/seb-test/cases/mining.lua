@@ -70,6 +70,9 @@ function case.setup(surface)
     chain = rig.design({ DRILL, CHEST, sensor(1.5, 1.5), rig.socket(5.5, 1.5, D.east) }, "Mining chain"),
     tile = rig.design({ DRILL, CHEST, sensor(0.5, 0.5, 0), rig.socket(5.5, 1.5, D.east) }, "Mining tile"),
     plain = rig.design({ DRILL }, "Mining plain"),
+    -- A chest stays when the drill is destroyed: a copy with nothing left
+    -- would be released (vanish.lua), not judged dry or not.
+    with_chest = rig.design({ DRILL, CHEST }, "Mining with chest"),
     huge = rig.design({ CHEST, sensor(4.5, 1.5, 100000) }, "Mining huge"),
   }
   -- The lab has no ore, so a drill's ghost is made directly for the picture.
@@ -96,7 +99,7 @@ function case.start()
   m.tile_project = start(m.tile, TILE_REGION)
   m.retire_project = start(m.plain, RETIRE_REGION, { max_instances = 1, retire_depleted = true })
   m.removed_project = start(m.chain, REMOVED_REGION, { max_instances = 3 })
-  m.no_drill_project = start(m.plain, NO_DRILL_REGION, { max_instances = 1, retire_depleted = true })
+  m.no_drill_project = start(m.with_chest, NO_DRILL_REGION, { max_instances = 1, retire_depleted = true })
   m.oil_project = start(m.tile, OIL_REGION, { max_instances = 3 })
   m.stopped_project = start(m.plain, STOPPED_REGION, { max_instances = 1, retire_depleted = true })
   local huge = rig.call("stamp", {

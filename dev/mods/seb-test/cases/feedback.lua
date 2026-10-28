@@ -19,6 +19,10 @@ local case = { name = "feedback" }
 local MARKS_REGION, WAIT_REGION, WATER_REGION, FAR_REGION = 30, 31, 32, 33
 local D = defines.direction
 local CELL = { rig.panel(1.5, 1.5) }
+-- A panel and a pole: the pole gets built, the panel's ghost is removed by
+-- hand, so the copy comes out incomplete with something of it left (a copy
+-- with nothing left is released, vanish.lua).
+local CELL_POLE = { rig.panel(1.5, 1.5), { name = "medium-electric-pole", position = { x = 3.5, y = 1.5 } } }
 local NO_PANELS = { { "medium-electric-pole", 10 } }
 
 local function start(design, at, extra)
@@ -54,7 +58,7 @@ function case.setup(surface)
   rig.water(surface, rig.box(o, 6, -4, 16, 16))
   rig.water(surface, rig.box(o, -4, 6, 16, 16))
   rig.floor(surface, rig.box(rig.region(FAR_REGION), -20, -20, 20, 20))
-  storage.feedback = { cell = rig.design(CELL, "Feedback cell") }
+  storage.feedback = { cell = rig.design(CELL, "Feedback cell"), cell_pole = rig.design(CELL_POLE, "Feedback cell and pole") }
   local gallery = game.get_surface("seb-gallery")
   check.truthy("feedback gallery surface exists", gallery)
   if not gallery then return end
@@ -71,7 +75,7 @@ function case.start()
   local m = rig.region(MARKS_REGION)
   -- Never built (no panels in the network): building, then stalled.
   f.building = start(f.cell, rig.offset(m, 0.5, 0.5), { max_instances = 1, materials = false })
-  f.incomplete = start(f.cell, rig.offset(m, 0.5, 20.5), { max_instances = 1, materials = false })
+  f.incomplete = start(f.cell_pole, rig.offset(m, 0.5, 20.5), { max_instances = 1, materials = false })
   f.waiting = start(f.cell, rig.offset(rig.region(WAIT_REGION), 0.5, 0.5), { max_instances = 1 })
   f.water = start(f.cell, rig.offset(rig.region(WATER_REGION), 0.5, 0.5), { directions = { D.east, D.south } })
   f.far = start(f.cell, rig.offset(rig.region(FAR_REGION), 0.5, 0.5), { max_instances = 1 })
@@ -94,10 +98,11 @@ local function count(drawn)
   return n
 end
 
--- One ghost of the second copy is removed by hand: it comes out incomplete.
+-- The panel ghost of the second copy is removed by hand: it comes out incomplete.
 local function remove_a_ghost(surface)
   local b = marks_box(20)
-  local ghost = surface.find_entities_filtered { area = { { b.left, b.top }, { b.right, b.bottom } }, type = "entity-ghost" }[1]
+  local area = { { b.left, b.top }, { b.right, b.bottom } }
+  local ghost = surface.find_entities_filtered { area = area, type = "entity-ghost", ghost_name = "solar-panel" }[1]
   check.truthy("feedback a ghost to remove", ghost)
   if ghost then ghost.destroy() end
 end

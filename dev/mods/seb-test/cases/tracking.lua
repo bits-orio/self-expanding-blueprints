@@ -42,8 +42,12 @@ local function sync_cases(surface, design)
   check.eq("tracking stamp tags every ghost", #ghosts, 2)
   for _, g in ipairs(ghosts) do g.revive { raise_revive = true } end
 
+  -- One part built, the other's ghost removed: incomplete. With every ghost
+  -- removed nothing would be left, and the copy released (vanish.lua).
   t.removed = stamp(surface, design, rig.offset(o, 10, 0))
-  for _, g in ipairs(tagged_ghosts(surface, t.removed)) do g.destroy() end
+  local removed = tagged_ghosts(surface, t.removed)
+  removed[1].revive { raise_revive = true }
+  removed[2].destroy()
 
   t.partial = stamp(surface, design, rig.offset(o, 20, 0))
   local pair = tagged_ghosts(surface, t.partial)
