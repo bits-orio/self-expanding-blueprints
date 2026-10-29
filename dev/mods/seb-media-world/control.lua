@@ -2,7 +2,10 @@
 -- scene has its own stage, cleared of trees and rocks, with a roboport
 -- network and stock, some with a lake that stops growth. The designs the
 -- scenes use are registered for the player's team. remote.call("seb-media",
--- "go", scene) puts the player on a stage. Dev world only.
+-- "go", scene) puts the player on a stage; "creep" starts the creeping
+-- miner on its own stage (creep.lua). Dev world only.
+
+local creep = require("creep")
 
 local D = defines.direction
 
@@ -18,6 +21,7 @@ local SCENES = {
   spare2 = { x = 300, y = 900 },
   spare3 = { x = 600, y = 0 },
   spare4 = { x = 600, y = 300 },
+  creep = creep.SCENE,
 }
 local HALF_W, HALF_H = 100, 70
 
@@ -50,6 +54,7 @@ end
 
 local STOCK = {
   { "solar-panel", 400 }, { "medium-electric-pole", 200 }, { "small-lamp", 100 }, { "stone-brick", 800 },
+  { "electric-mining-drill", 100 }, { "transport-belt", 400 },
 }
 
 local function blueprint(entities, tiles, label)
@@ -133,6 +138,8 @@ script.on_init(function()
   local seb = "self-expanding-blueprints"
   remote.call(seb, "register_design", force.name, blueprint(SOLAR, nil, "Solar cell"))
   remote.call(seb, "register_design", force.name, blueprint(ROAD, road_tiles(), "Road"))
+  creep.stage(surface, force)
+  storage.creep_design = remote.call(seb, "register_design", force.name, blueprint(creep.DESIGN, nil, creep.LABEL))
 end)
 
 remote.add_interface("seb-media", {
@@ -143,4 +150,6 @@ remote.add_interface("seb-media", {
     player.teleport({ c.x + (dx or -10), c.y + 0.5 })
     return true
   end,
+  -- Starts the creeping miner on its stage; returns the project id.
+  creep = function() return creep.start(storage.creep_design) end,
 })
