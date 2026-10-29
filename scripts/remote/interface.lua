@@ -32,6 +32,7 @@ local PROJECT_FIELDS = {
   "position", "build_position", "point", "area", "direction", "directions", "max_instances", "materials",
   "reserve", "max_building", "charted_only", "retire_depleted", "dry_run", "order", "radius",
   "enemy_distance", "landfill", "open_early", "superforce", "preview_ghosts", "mirrored",
+  "sides_with_sockets",
 }
 local PROJECT_PLACES = { "position", "build_position", "point", "area" }
 

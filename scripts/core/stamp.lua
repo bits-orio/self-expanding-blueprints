@@ -23,11 +23,12 @@ local stamp = {}
 -- are ours to ignore (marker ghosts are read after the call returns).
 local building = false
 
--- The entry ghost must sit on the plan's target, facing its direction.
+-- The plug used (the main one unless the plan names another) must sit on the
+-- plan's target, facing its direction; a design's other plugs land elsewhere.
 local function entry_lands(plan, ghost)
   local target = plan.entry_target
   if not target then return true end
-  local want = geometry.turn(plan.prepared.entry.direction, plan.direction)
+  local want = geometry.turn((plan.entry or plan.prepared.entry).direction, plan.direction)
   local p = ghost.position
   return math.abs(p.x - target.x) < 0.01 and math.abs(p.y - target.y) < 0.01 and ghost.direction == want
 end
@@ -59,12 +60,13 @@ local function collect(built, id, plan)
   local record = {
     ghosts = {}, regs = {}, entities = 0, slots = {}, tiles = {}, tile_units = {}, tile_count = 0, aligned = true,
   }
+  local landed = false
   for _, ghost in pairs(built) do
     if ghost and ghost.valid then
       if ghost.type == "tile-ghost" then
         keep_tile(record, ghost, id)
       elseif ghosts.is_marker(ghost) then
-        if ghost.ghost_name == const.ENTRY and not entry_lands(plan, ghost) then record.aligned = false end
+        if ghost.ghost_name == const.ENTRY and entry_lands(plan, ghost) then landed = true end
         ghost.destroy()
       elseif ghosts.is_foreign_marker(ghost) then
         ghost.destroy()
@@ -73,6 +75,7 @@ local function collect(built, id, plan)
       end
     end
   end
+  if plan.entry_target and not landed then record.aligned = false end
   return record
 end
 

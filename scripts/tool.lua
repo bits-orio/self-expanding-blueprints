@@ -122,7 +122,11 @@ local function grow_params(player, surface, design, where)
     return params
   end
   params.point, params.direction = where.point, where.direction
-  params.directions = ordered_directions(options.directions)
+  -- A design with socket arrows grows through them, and plain copies toward
+  -- the other sides the player ticked for such designs, turned with the paste.
+  local drawn = design.prepared and design.prepared.ok and #design.prepared.sockets > 0
+  if drawn then world, params.world_directions, params.sides_with_sockets = false, false, true end
+  params.directions = ordered_directions(drawn and (options.socket_sides or {}) or options.directions)
   if not world then
     params.directions = turned_directions(params.directions, where.direction or geometry.NORTH, where.mirrored)
   end

@@ -26,6 +26,19 @@ function signals.virtual(entity, name)
   return total
 end
 
+-- The value of the first signal set in a blueprint entity, or nil: a plug's
+-- or socket's number, whatever the signal.
+function signals.first_value(entity)
+  for _, section in ipairs(sections_of(entity)) do
+    if not section.group or section.group == "" then
+      for _, filter in ipairs(section.filters or {}) do
+        if filter.name and filter.count then return filter.count end
+      end
+    end
+  end
+  return nil
+end
+
 -- Every non-virtual signal set in a blueprint entity, as {type, name}.
 function signals.named(entity)
   local list = {}

@@ -31,26 +31,30 @@ local function edge_point(box, toward)
 end
 
 -- The sockets a copy opens once it is finished: the drawn ones of the
--- version it was stamped from, or, for a version of the project's own
--- design without any, implicit ones toward each of the project's
--- directions. A plain design that a drawn socket names is an end piece and
--- opens nothing. The overlay draws them ahead of time (overlay.lua).
+-- version it was stamped from, and, for a version of the project's own
+-- design, implicit ones toward each of the project's directions that no
+-- drawn socket of the copy points to (with drawn ones, only for a project
+-- that grows sides with its sockets). A plain design that a drawn socket
+-- names is an end piece and opens nothing. The overlay draws them ahead of
+-- time (overlay.lua).
 function frontier.sockets_of(project, instance)
-  local list = {}
-  if #instance.sockets == 0 then
-    if instance.design_id ~= project.design_id then return list end
-    for _, toward in ipairs(project.directions) do
+  local list, taken = {}, {}
+  for i, s in ipairs(instance.sockets) do
+    list[#list + 1] = {
+      kind = "drawn", from = instance.id, index = i, position = s.position, direction = s.direction, target = s.target,
+      number = s.number,
+    }
+    taken[s.direction % 16] = true
+  end
+  if instance.design_id ~= project.design_id then return list end
+  if #list > 0 and not project.sides_with_sockets then return list end
+  for _, toward in ipairs(project.directions) do
+    if not taken[toward] then
       list[#list + 1] = {
         kind = "implicit", from = instance.id, toward = toward, direction = toward,
         position = edge_point(instance.footprint, toward),
       }
     end
-    return list
-  end
-  for i, s in ipairs(instance.sockets) do
-    list[#list + 1] = {
-      kind = "drawn", from = instance.id, index = i, position = s.position, direction = s.direction, target = s.target,
-    }
   end
   return list
 end

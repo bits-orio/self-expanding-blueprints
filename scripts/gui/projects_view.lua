@@ -1,7 +1,10 @@
 -- The projects section: on a design's page one row per project of that
 -- design, on the front page those of deleted designs; each with a status
 -- light, its state and progress, why it waits or stalled, its history on
--- hover, and locate, pause, resume, retry and stop buttons.
+-- hover, and locate, pause, resume, retry and stop buttons. Finished real
+-- projects fold away under a "Show N finished" button, so the list shows what
+-- still needs attention; a bar above acts on every listed project at once
+-- (project_bulk.lua).
 -- Rows are updated in place, never rebuilt while a project grows: in
 -- multiplayer a click names its element, and a click on an element destroyed
 -- in the meantime is lost. Child names carry a prefix so that none shadows a
@@ -19,6 +22,7 @@ local update_queue = require("scripts.core.update_queue")
 local designs_view = require("scripts.gui.designs_view")
 local project_text = require("scripts.gui.project_text")
 local retry = require("scripts.core.retry")
+local project_bulk = require("scripts.gui.project_bulk")
 
 local projects_view = {}
 
@@ -150,6 +154,27 @@ local function listed(player)
   end
   return list
 end
+projects_view.listed = listed
+
+-- The fold's button counts the finished rows; they show while it is open.
+local function sync_fold(pane, player)
+  local n = #pane.proj_done.children
+  local open = registry.player(player.index).show_finished == true
+  pane.proj_fold.visible = n > 0
+  pane.proj_fold.caption = { open and "seb-gui.finished-hide" or "seb-gui.finished-show", n }
+  pane.proj_done.visible = open and n > 0
+end
+
+function projects_view.toggle_finished(player, button)
+  local state = registry.player(player.index)
+  state.show_finished = not state.show_finished
+  local pane = button.valid and button.parent
+  if pane and pane.proj_done then sync_fold(pane, player) end
+end
+
+local function rows_for(pane, project)
+  return projects.is_done(project) and pane.proj_done or pane.proj_rows
+end
 
 -- The front page shows the section only while a deleted design's project runs.
 local function fill(holder, player)
@@ -160,13 +185,19 @@ local function fill(holder, player)
     end
     return
   end
+  project_bulk.build(holder)
   local pane = holder.add {
     type = "scroll-pane", name = "proj_pane", style = "naked_scroll_pane",
     vertical_scroll_policy = "auto", horizontal_scroll_policy = "never",
   }
-  local rows = pane.add { type = "flow", name = "proj_rows", direction = "vertical" }
-  rows.style.vertical_spacing = layout.ROW_GAP
-  for _, project in ipairs(list) do update_row(add_row(rows, project), project) end
+  for _, name in ipairs({ "proj_rows", "proj_fold", "proj_done" }) do
+    local child = name == "proj_fold"
+      and pane.add { type = "button", name = name, tags = { seb = "toggle-finished" } }
+      or pane.add { type = "flow", name = name, direction = "vertical" }
+    if name == "proj_fold" then child.style.horizontally_stretchable = true else child.style.vertical_spacing = layout.ROW_GAP end
+  end
+  for _, project in ipairs(list) do update_row(add_row(rows_for(pane, project), project), project) end
+  sync_fold(pane, player)
 end
 
 function projects_view.build(parent, player)
@@ -190,19 +221,25 @@ local function index_for(rows, id)
   end
 end
 
--- Updates, adds or removes one project's row. Only a list that becomes empty,
--- or stops being empty, is redrawn whole.
+-- Updates, adds, moves (into or out of the fold) or removes one project's
+-- row. Only a list that becomes empty, or stops being empty, is redrawn whole,
+-- and a window drawn before the fold existed.
 function projects_view.refresh_row(body, player, project)
   local holder = body[NAME]
-  local rows = holder and holder.proj_pane and holder.proj_pane.proj_rows
-  if not rows then return projects_view.refresh(body, player) end
-  local row = rows["p" .. project.id]
+  local pane = holder and holder.proj_pane
+  if not (pane and pane.proj_done) then return projects_view.refresh(body, player) end
+  local name = "p" .. project.id
+  local into = rows_for(pane, project)
+  local other = into == pane.proj_rows and pane.proj_done or pane.proj_rows
+  if other[name] then other[name].destroy() end
+  local row = into[name]
   if not (storage.projects[project.id] and belongs(project, player)) then
     if row then row.destroy() end
-    if #rows.children == 0 then projects_view.refresh(body, player) end
-    return
+    if #pane.proj_rows.children + #pane.proj_done.children == 0 then return projects_view.refresh(body, player) end
+  else
+    update_row(row or add_row(into, project, index_for(into, project.id)), project)
   end
-  update_row(row or add_row(rows, project, index_for(rows, project.id)), project)
+  sync_fold(pane, player)
 end
 
 return projects_view

@@ -85,7 +85,7 @@ local CHECKS = {
   direction = cardinal, directions = cardinals, materials = boolean, charted_only = boolean, retire_depleted = boolean, dry_run = boolean, open_early = boolean,
   max_instances = integer_from(1), max_building = integer_from(1), reserve = integer_from(0),
   radius = integer_from(1), enemy_distance = integer_from(0), landfill = boolean, order = order,
-  superforce = boolean, preview_ghosts = preview_count, mirrored = boolean,
+  superforce = boolean, preview_ghosts = preview_count, mirrored = boolean, sides_with_sockets = boolean,
 }
 
 -- Copies the listed fields of a call's params, each checked and normalised,

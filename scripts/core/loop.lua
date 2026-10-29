@@ -41,6 +41,7 @@ local MARKED = {
   [REASON.unknown_design] = true, [REASON.invalid_design] = true, [REASON.stamp_short] = true,
   [REASON.overlaps_parent] = true, [REASON.no_resource] = true, [REASON.off_grid] = true,
   [REASON.misaligned] = true, [REASON.probe] = true, [REASON.held_land] = true, [REASON.enemies] = true,
+  [REASON.no_plug] = true,
 }
 loop.MARKED = MARKED
 

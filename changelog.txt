@@ -1,4 +1,14 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.2.8
+Date: 2026-10-28
+  Features:
+    - Numbered plugs: a design may have several plugs, each numbered by a signal set in it. A socket with the same number attaches its child by that plug, so a row can hang off a trunk by one plug and still grow straight out both sides through its own sockets.
+    - Sides and sockets together: on the Grow page of a design with sockets, the sides they point to are ticked for you and the other sides can be ticked to grow plain copies that way too. Sockets alone, as before, until you tick one.
+    - Finished projects fold away under "Show N finished", so the list shows what still needs you.
+    - A bar over each design's projects: Pause all, Resume all, Retry all, Clear finished, Stop all.
+  Changes:
+    - A marker placed as a ghost (in remote view, or with none in hand) is placed for real at once: markers cost nothing.
+---------------------------------------------------------------------------------------------------
 Version: 0.2.7
 Date: 2026-10-28
   Features:

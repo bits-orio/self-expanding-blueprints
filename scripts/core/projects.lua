@@ -81,6 +81,10 @@ local function new_project(params, design, seed, direction)
     -- How the paste was turned (the window shows it): flipped, growing its
     -- designs' mirror twins; and grow-toward directions kept to the world.
     mirrored = params.mirrored == true, world_directions = params.world_directions == true,
+    -- A design with socket arrows grows plain copies toward its directions
+    -- too, the sides no socket of a copy points to (frontier.lua). Projects
+    -- from before this grow through their sockets alone.
+    sides_with_sockets = params.sides_with_sockets == true,
     -- Who started it from the window, told if it builds nothing.
     player_index = params.player_index,
   }
@@ -232,6 +236,12 @@ function projects.stop(project)
   loop.wake_force(project.force_index)
   changed(project)
   ended(project)
+end
+
+-- A real project that finished needs nothing more; a finished plan still
+-- waits to be built.
+function projects.is_done(project)
+  return project.state == STATE.finished and not project.dry_run
 end
 
 -- A project that came to nothing goes at once, row and all; the player was

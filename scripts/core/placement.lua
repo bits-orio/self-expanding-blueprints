@@ -86,7 +86,7 @@ function placement.sockets(prepared, position, direction)
     list[i] = {
       position = placement.world(prepared, socket.position, position, direction),
       direction = geometry.turn(socket.direction, direction),
-      target = socket.target,
+      target = socket.target, number = socket.number,
     }
   end
   return list
@@ -134,8 +134,8 @@ end
 -- `point` when built facing `direction`. A design without an entry lands by
 -- its vanilla anchor (placement.anchor). Returns nil and "off-grid" when an
 -- entry target is off the design's lattice.
-function placement.by_entry(prepared, point, direction)
-  local entry = prepared.entry
+function placement.by_entry(prepared, point, direction, entry)
+  entry = entry or prepared.entry
   if not entry then return placement.anchor(prepared, point, direction) end
   local o = prepared.offsets[direction]
   local r = geometry.rotate(entry.position, direction)
@@ -163,16 +163,38 @@ local function by_edge(prepared, socket)
   return at, geometry.NORTH
 end
 
--- A child on a drawn socket: its entry arrow lands on the socket facing the
--- same way, or it attaches by its back edge (by_edge).
-function placement.on_socket(prepared, socket)
-  if not prepared.entry then return by_edge(prepared, socket) end
-  return placement.by_entry(prepared, socket.position, geometry.turn_between(prepared.entry.direction, socket.direction))
+-- The plug a socket attaches: the one with the socket's number; for a
+-- socket without one, the design's main plug (prepare.lua). Nil when no
+-- plug has the number.
+function placement.plug_for(prepared, socket)
+  if not socket.number then return prepared.entry end
+  for _, entry in ipairs(prepared.entries or { prepared.entry }) do
+    if entry.number == socket.number then return entry end
+  end
+  return nil
 end
 
--- Where the entry arrow of a stamp at `position` facing `direction` lands.
-function placement.entry_at(prepared, position, direction)
-  return prepared.entry and placement.world(prepared, prepared.entry.position, position, direction)
+-- A child on a drawn socket: its plug lands on the socket facing the same
+-- way, or, with no plug at all, it attaches by its back edge (by_edge).
+-- Also returns the plug used, or nil and "no-plug" when a numbered socket
+-- names a plug the design lacks.
+function placement.on_socket(prepared, socket)
+  if not prepared.entry then
+    if socket.number then return nil, const.REASON.no_plug end
+    return by_edge(prepared, socket)
+  end
+  local entry = placement.plug_for(prepared, socket)
+  if not entry then return nil, const.REASON.no_plug end
+  local position, direction = placement.by_entry(prepared, socket.position,
+    geometry.turn_between(entry.direction, socket.direction), entry)
+  return position, direction, entry
+end
+
+-- Where a plug (the main one unless given) of a stamp at `position` facing
+-- `direction` lands.
+function placement.entry_at(prepared, position, direction, entry)
+  entry = entry or prepared.entry
+  return entry and placement.world(prepared, entry.position, position, direction)
 end
 
 -- A blueprint with absolute snapping snaps to world grid lines at

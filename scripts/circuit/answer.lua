@@ -15,7 +15,7 @@ local ERROR_OF = {
   [const.REASON.invalid_design] = "unknown-design", [const.REASON.no_network] = "out-of-range",
   [const.REASON.no_resource] = "no-resource", [const.REASON.probe] = "probe",
   [const.REASON.ghost_removed] = "incomplete", [const.REASON.held_land] = "held-land",
-  [const.REASON.stamp_short] = "building",
+  [const.REASON.stamp_short] = "building", [const.REASON.no_plug] = "invalid",
   -- The map's limits for the team (D45): one error says the team is at one.
   [const.REASON.too_many_projects] = "limit", [const.REASON.too_many_designs] = "limit",
   [const.REASON.design_too_big] = "limit", [const.REASON.too_many_sockets] = "limit",

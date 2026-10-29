@@ -52,9 +52,11 @@ local function split(entities)
     elseif foreign then
       -- Another mod's marker this mod does not use: no part of the design.
     elseif e.name == const.SOCKET then
-      parts.sockets[#parts.sockets + 1] = { position = e.position, direction = e.direction or 0, target = socket_target(e) }
+      parts.sockets[#parts.sockets + 1] = {
+        position = e.position, direction = e.direction or 0, target = socket_target(e), number = signals.first_value(e),
+      }
     elseif e.name == const.ENTRY then
-      parts.entries[#parts.entries + 1] = { position = e.position, direction = e.direction or 0 }
+      parts.entries[#parts.entries + 1] = { position = e.position, direction = e.direction or 0, number = signals.first_value(e) }
     elseif e.name == const.SENSOR then
       parts.sensors[#parts.sensors + 1] = { position = e.position, radius = signals.virtual(e, const.RADIUS_SIGNAL) }
     elseif e.name == const.PROBE then
@@ -177,6 +179,29 @@ local function too_wide(reach)
   return reach ~= nil and math.max(reach.right - reach.left, reach.bottom - reach.top) > const.MAX_DESIGN_SPAN
 end
 
+-- Plugs are told apart by their numbers: no two may share one (or both have
+-- none).
+local function plugs_apart(entries)
+  local seen = {}
+  for _, entry in ipairs(entries) do
+    local key = entry.number or "none"
+    if seen[key] then return false end
+    seen[key] = true
+  end
+  return true
+end
+
+-- The plug a socket without a number uses: the one without a number, else
+-- the lowest numbered.
+local function main_plug(entries)
+  local best
+  for _, entry in ipairs(entries) do
+    if not entry.number then return entry end
+    if not best or entry.number < best.number then best = entry end
+  end
+  return best
+end
+
 -- What the blueprint holds, or why it cannot be a design. The size limits,
 -- when `limited`, come first and read nothing but the blueprint's own lists
 -- (its engine figures alone, when those are already over).
@@ -192,7 +217,7 @@ local function read(design, source, limited)
   if limited and #first.sockets > const.MAX_DESIGN_SOCKETS then return nil, const.REASON.too_many_sockets end
   local poles = count_type(first.buildable, "electric-pole")
   if limited and poles > const.MAX_DESIGN_POLES then return nil, const.REASON.too_many_poles end
-  if #first.entries > 1 then return nil, "many-entries" end
+  if not plugs_apart(first.entries) then return nil, "many-entries" end
   if not inner then return nil, "empty-blueprint" end
   return { inner = inner, reach = reach, parts = #entities + #tiles, poles = poles }
 end
@@ -261,7 +286,8 @@ function prepare.run(design, source, copy, opts)
     ok = true, version = design.version, bounds = bounds_of(parts.buildable, tiles, parts.clears), offsets = offsets,
     anchor = parts.anchor, grid = grid and { x = grid.x, y = grid.y } or nil, lattice = lattice_of(parts.buildable),
     absolute = absolute and { x = absolute.x, y = absolute.y } or nil,
-    sockets = parts.sockets, entry = parts.entries[1], placements = parts.buildable, tiles = tiles,
+    sockets = parts.sockets, entry = main_plug(parts.entries), entries = parts.entries,
+    placements = parts.buildable, tiles = tiles,
     sensors = sensor_areas, sensor_categories = sensor_categories, probes = parts.probes, port = parts.ports[1],
     clears = parts.clears, reach = blueprint.reach, parts = blueprint.parts,
     entity_count = #parts.buildable, tile_count = #tiles, pole_count = blueprint.poles, cost = cost_of(copy),

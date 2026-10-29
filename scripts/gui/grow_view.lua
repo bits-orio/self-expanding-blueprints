@@ -30,14 +30,28 @@ local function checkbox(parent, key, state, action, enabled)
   }
 end
 
--- Where it grows: the directions, or the design's own socket arrows.
-local function where_group(column, options, drawn)
+-- The sides a design's socket arrows point to, as drawn.
+local function socket_sides(prepared)
+  local sides = {}
+  for _, socket in ipairs(prepared.sockets) do sides[socket.direction % 16] = true end
+  return sides
+end
+
+-- Where it grows: the directions; for a design with socket arrows, the
+-- sides they point to (fixed, ticked) and any other side the player ticks
+-- (its own choice, unticked at first, so sockets alone grow it).
+local function where_group(column, options, drawn, prepared)
   local row = layout.row(column)
   row.add { type = "label", caption = { "seb-gui.directions" }, tooltip = { "seb-gui.directions-tooltip" } }
+  local by_socket = drawn and socket_sides(prepared) or {}
+  local chosen = drawn and (options.socket_sides or {}) or options.directions
   for _, d in ipairs(DIRECTIONS) do
+    local fixed = by_socket[d.direction] == true
     row.add {
-      type = "checkbox", caption = { "seb-gui.direction-" .. d.key }, enabled = not drawn,
-      state = options.directions[d.direction] == true, tags = { seb = "grow-direction", direction = d.direction },
+      type = "checkbox", caption = { "seb-gui.direction-" .. d.key }, enabled = not fixed,
+      state = fixed or chosen[d.direction] == true,
+      tooltip = fixed and { "seb-gui.direction-by-socket" } or nil,
+      tags = { seb = "grow-direction", direction = d.direction, sockets = drawn or nil },
     }
   end
   checkbox(column, "world-directions", options.world_directions, "grow-world-directions", not drawn)
@@ -151,7 +165,7 @@ local function fill(parent, player)
   local column = split.add { type = "flow", direction = "vertical" }
   column.style.maximal_width = COLUMN_WIDTH
   column.style.vertical_spacing = layout.ROW_GAP
-  where_group(column, options, drawn)
+  where_group(column, options, drawn, design.prepared)
   layout.divider(column)
   count_row(column, options)
   layout.divider(column)

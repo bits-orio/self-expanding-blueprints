@@ -100,6 +100,8 @@ const.REASON = {
   parent_retiring = "parent-retiring",
   -- A probe of the design does not hold where it would land.
   probe = "probe",
+  -- A numbered socket names a plug its child design does not have.
+  no_plug = "no-plug",
   -- Land Title Registry: the land is not held well enough for a part.
   held_land = "held-land",
   -- Too close to enemy spawners or turrets (the enemy_distance rule).

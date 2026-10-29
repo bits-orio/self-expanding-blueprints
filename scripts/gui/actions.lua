@@ -8,6 +8,7 @@ local budget = require("scripts.core.budget")
 local projects = require("scripts.core.projects")
 local window = require("scripts.gui.window")
 local projects_view = require("scripts.gui.projects_view")
+local project_bulk = require("scripts.gui.project_bulk")
 local preview = require("scripts.gui.preview")
 local copies_view = require("scripts.gui.copies_view")
 local instances = require("scripts.core.instances")
@@ -129,6 +130,8 @@ local click = {
   ["resume-project"] = with_project(projects.resume),
   ["stop-project"] = with_project(projects.stop),
   ["retry-project"] = with_project(projects.retry),
+  ["bulk-projects"] = function(player, tags) project_bulk.run(player, tags.op, projects_view.listed(player)) end,
+  ["toggle-finished"] = function(player, _, element) projects_view.toggle_finished(player, element) end,
   ["build-project"] = with_project(projects.build),
   ["list-copies"] = with_project(function(project, player) copies_view.open(player, project) end),
   ["close-copies"] = function(player) copies_view.close(player) end,
@@ -165,8 +168,12 @@ function actions.on_click(event)
 end
 
 local checked = {
+  -- A design with socket arrows keeps its own choice of extra sides.
   ["grow-direction"] = function(player, tags, element)
-    registry.grow_options(player.index).directions[tags.direction] = element.state or nil
+    local options = registry.grow_options(player.index)
+    local key = tags.sockets and "socket_sides" or "directions"
+    options[key] = options[key] or {}
+    options[key][tags.direction] = element.state or nil
   end,
   ["grow-materials"] = function(player, _, element)
     registry.grow_options(player.index).materials = element.state

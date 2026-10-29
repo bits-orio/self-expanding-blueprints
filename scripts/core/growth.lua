@@ -159,13 +159,13 @@ end
 local function place_and_check(project, socket, design, tally)
   local prepared = design.prepared
   if not (prepared and prepared.ok) then return closed(REASON.invalid_design, socket.position) end
-  local position, direction = place(project, socket, prepared)
+  local position, direction, entry = place(project, socket, prepared)
   if not position then return closed(direction or REASON.invalid_design, socket.position) end
   -- Superforced, a copy also stands on water, on the engine's landfill (water.lua).
   local spot = {
     design = design, prepared = prepared, position = position, direction = direction,
     footprint = placement.footprint(prepared, position, direction),
-    entry_target = placement.entry_at(prepared, position, direction), work = tally,
+    entry = entry, entry_target = placement.entry_at(prepared, position, direction, entry), work = tally,
     superforce = project.superforce, cover_water = project.superforce,
   }
   -- The rules walk the copies' overlap index chunk by chunk, a plan its own too.
