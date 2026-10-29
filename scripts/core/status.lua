@@ -57,7 +57,7 @@ function status.of(project)
   if reason then return { level = "stalled", reason = reason, count = stalled } end
   local gate = project.gate
   if gate and gate.reason ~= REASON.capacity then
-    return { level = "waiting", reason = gate.reason, item = gate.item }
+    return { level = "waiting", reason = gate.reason, item = gate.item, network = gate.network }
   end
   local unreachable = #project.parked
   local idle = #project.frontier == 0 and project.building == 0

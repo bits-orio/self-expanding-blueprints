@@ -63,7 +63,7 @@ end
 -- the socket and waits its turn like a step that never started.
 function holds.hold(project, result)
   if result.reason == REASON.busy then return holds.wait_busy(project) end
-  project.gate = { reason = result.reason, item = result.item }
+  project.gate = { reason = result.reason, item = result.item, network = result.network }
   project.busy_logged = nil
   log_wait(project, result)
   if result.reason == REASON.chunks then

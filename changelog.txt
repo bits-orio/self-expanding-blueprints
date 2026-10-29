@@ -1,4 +1,10 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.2.10
+Date: 2026-10-28
+  Changes:
+    - Roboports on the map come before personal roboports: when a map roboport reaches any corner or the middle of the next copy, its network builds it and is the one counted; a personal roboport counts only where no map roboport touches the copy.
+    - Waiting texts name the network: on the project's row and at the waiting arrow on the map, "roboport network #3" or "Pirion's personal roboport". Out of reach now reads "Out of reach of every roboport, a personal one included".
+---------------------------------------------------------------------------------------------------
 Version: 0.2.9
 Date: 2026-10-28
   Features:

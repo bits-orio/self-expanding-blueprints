@@ -21,8 +21,8 @@ function spots.closed(reason, position)
   return { kind = "closed", reason = reason, position = position }
 end
 
-function spots.gate(reason, item)
-  return { kind = "gate", reason = reason, item = item }
+function spots.gate(reason, item, network)
+  return { kind = "gate", reason = reason, item = item, network = network }
 end
 local gate = spots.gate
 
@@ -42,11 +42,12 @@ local function materials_gate(project, surface, force, spot, socket)
   if not project.gates.materials or project.dry_run then return nil end
   local cost = gates.cost_of(spot)
   spot.work.checked = spot.work.checked + #cost
-  local ok, why, item = gates.materials(surface, force, geometry.box_center(spot.footprint),
-    cost, project.gates.reserve)
+  local ok, why, item, network = gates.materials(surface, force, spot.footprint, cost, project.gates.reserve)
+  -- The network that builds it, named while the project waits for its copies.
+  spot.network = network
   local first_copy = socket.kind == "seed" and project.id ~= nil
   if ok or (why == REASON.no_network and first_copy) then return nil end
-  return gate(why, item)
+  return gate(why, item, network)
 end
 
 -- Enemy buildings near the spot, and water a project told to bring no

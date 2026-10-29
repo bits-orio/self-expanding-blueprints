@@ -13,6 +13,8 @@ local const = require("scripts.const")
 local frontier = require("scripts.core.frontier")
 local draw = require("scripts.render.draw")
 
+local network_words = require("scripts.network_words")
+
 local marks = {}
 
 local COLOR = draw.COLOR
@@ -54,13 +56,15 @@ local function store_of(project, base)
   return store, true
 end
 
--- An open socket's arrow, or a waiting one with why (`key` is a reason).
-local function socket_mark(base, socket, key)
+-- An open socket's arrow, or a waiting one with why (`key` is a reason,
+-- then "|" and the network it waits on, network_words.key).
+local function socket_mark(base, socket, key, network)
   local objects = {}
   draw.arrow(objects, base, socket, key == "open" and COLOR.open or COLOR.waiting)
   if key == "open" then return objects end
+  local reason = key:match("^[^|]*")
   objects[2] = rendering.draw_text(draw.with(base, {
-    text = { "seb-reason." .. key }, color = COLOR.waiting, scale = 0.9,
+    text = network_words.with({ "seb-reason." .. reason }, network), color = COLOR.waiting, scale = 0.9,
     alignment = "center", target = { socket.position.x, socket.position.y + 0.5 },
   }))
   return objects
@@ -116,8 +120,10 @@ function marks.refresh(project)
   local ahead = frontier.ahead(project, MAX)
   -- A gate holds the socket the project tries next; that one shows why.
   local held = project.gate and ahead[1]
-  local function paint(socket, key) return socket_mark(base, socket, key) end
-  sync(store.sockets, ahead, function(socket) return socket == held and project.gate.reason or "open" end, paint, pass)
+  local network = held and project.gate.network
+  local function paint(socket, key) return socket_mark(base, socket, key, socket == held and network or nil) end
+  local held_key = held and (project.gate.reason .. "|" .. network_words.key(network))
+  sync(store.sockets, ahead, function(socket) return socket == held and held_key or "open" end, paint, pass)
   sync(store.parked, first(project.parked, MAX), function() return const.REASON.no_network end, paint, pass)
   sync(store.awaiting, first(project.awaiting or {}, MAX), function() return const.REASON.parent_retiring end,
     paint, pass)

@@ -5,6 +5,7 @@
 
 local const = require("scripts.const")
 local frontier = require("scripts.core.frontier")
+local network_words = require("scripts.network_words")
 
 local project_text = {}
 
@@ -51,11 +52,11 @@ function project_text.why(s, project)
   local none = nothing_built(project)
   if none then return none end
   if s.level == "waiting" and s.reason == REASON.missing_materials and s.item then
-    return { "seb-status.missing", s.item.count, item_icon(s.item), s.item.have or 0 }
+    return network_words.with({ "seb-status.missing", s.item.count, item_icon(s.item), s.item.have or 0 }, s.network)
   end
   if s.level == "waiting" and s.reason == REASON.no_network then return { "seb-status.unreachable-all", s.count } end
   if s.level == "waiting" and s.reason == REASON.ore_left then return { "seb-status.ore-all", s.count } end
-  if s.level == "waiting" then return reason(s.reason) end
+  if s.level == "waiting" then return network_words.with(reason(s.reason), s.network) end
   if s.level == "stalled" and s.reason == REASON.no_progress then return { "seb-status.stalled-quiet", s.count } end
   if s.level == "stalled" then return { "seb-status.stalled-copies", s.count, reason(s.reason) } end
   if s.level == "growing" and s.unreachable > 0 then return { "seb-status.unreachable-some", s.unreachable } end

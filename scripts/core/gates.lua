@@ -10,19 +10,53 @@ local gates = {}
 
 local STATE = const.PROJECT_STATE
 
--- The construction networks whose robots can build at `position`. A
--- player's personal roboport is a network of its own (a mobile cell) that
--- builds from the player's pockets and leaves with them, so it counts only
--- where no roboport network reaches (measured on 2.1.23: the engine lists
--- it among the others, and its item count is the player's inventory).
-function gates.networks_at(surface, force, position)
-  local fixed, personal = {}, {}
-  for _, network in pairs(surface.find_logistic_networks_by_construction_area(position, force)) do
-    local cell = network.find_cell_closest_to(position)
-    local list = (cell and cell.mobile) and personal or fixed
-    list[#list + 1] = network
+-- The points a copy's reach is looked up at: a position, or a footprint's
+-- middle and its four corners (half a tile in).
+local function points_of(where)
+  if where.x then return { where } end
+  local l, t, r, b = where.left + 0.5, where.top + 0.5, where.right - 0.5, where.bottom - 0.5
+  return { { x = (l + r) / 2, y = (t + b) / 2 }, { x = l, y = t }, { x = r, y = t }, { x = l, y = b }, { x = r, y = b } }
+end
+
+-- The construction networks whose robots can build at `where` (a position,
+-- or a footprint): none unless one reaches its middle. A player's personal
+-- roboport is a network of its own (a mobile cell) that builds from the
+-- player's pockets and leaves with them, so it counts only where no roboport
+-- network reaches any of the points: a roboport on the map that reaches part
+-- of a copy comes first (measured on 2.1.23: the engine lists the personal
+-- one among the others, and its item count is the player's inventory).
+function gates.networks_at(surface, force, where)
+  local fixed, personal, seen = {}, {}, {}
+  local points = points_of(where)
+  if #surface.find_logistic_networks_by_construction_area(points[1], force) == 0 then return {} end
+  for _, point in ipairs(points) do
+    for _, network in pairs(surface.find_logistic_networks_by_construction_area(point, force)) do
+      if not seen[network.network_id] then
+        seen[network.network_id] = true
+        local cell = network.find_cell_closest_to(point)
+        local list = (cell and cell.mobile) and personal or fixed
+        list[#list + 1] = network
+      end
+    end
   end
   return #fixed > 0 and fixed or personal
+end
+
+-- Which networks a list of supplies is, as plain data for a wait text:
+-- {personal = player name} for a personal roboport, else {ids = {network
+-- ids}}; nil for a platform's hub or none.
+function gates.network_label(supplies)
+  local first = supplies[1]
+  if not (first and first.object_name == "LuaLogisticNetwork") then return nil end
+  local cell = first.cells[1]
+  if cell and cell.mobile then
+    local owner = cell.owner
+    local player = owner and owner.valid and owner.player
+    return { personal = player and player.name or "" }
+  end
+  local ids = {}
+  for i, network in ipairs(supplies) do ids[i] = network.network_id end
+  return { ids = ids }
 end
 
 -- On a space platform the hub builds every ghost from its own inventory:
@@ -36,10 +70,10 @@ end
 -- What a stamp at `position` is built from, as a list: a platform's hub
 -- inventory, or the networks reaching it (gates.networks_at); empty where
 -- nothing builds there. Items are counted across the list.
-function gates.supplies_at(surface, force, position)
+function gates.supplies_at(surface, force, where)
   local hub = hub_of(surface)
   if hub then return { hub.get_inventory(defines.inventory.hub_main) } end
-  return gates.networks_at(surface, force, position)
+  return gates.networks_at(surface, force, where)
 end
 
 -- How many of an item ({name, quality}) the supplies hold together.
@@ -94,16 +128,18 @@ function gates.cost_of(spot)
 end
 
 -- true, or false with a reason (and for missing materials the first
--- missing item).
-function gates.materials(surface, force, position, cost, reserve)
-  local supplies = gates.supplies_at(surface, force, position)
+-- missing item); last, which networks it looked at (gates.network_label).
+-- `where`: a position, or the copy's footprint.
+function gates.materials(surface, force, where, cost, reserve)
+  local supplies = gates.supplies_at(surface, force, where)
   if #supplies == 0 then return false, const.REASON.no_network end
+  local label = gates.network_label(supplies)
   if supplies[1].object_name == "LuaLogisticNetwork" and not gates.robots_idle(supplies) then
-    return false, const.REASON.robots_busy
+    return false, const.REASON.robots_busy, nil, label
   end
   local missing = short_of(supplies, cost, reserve)
-  if missing then return false, const.REASON.missing_materials, missing end
-  return true
+  if missing then return false, const.REASON.missing_materials, missing, label end
+  return true, nil, nil, label
 end
 
 -- Copies stalled where no robots reach: a first copy may go down out of

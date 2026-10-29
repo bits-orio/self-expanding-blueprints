@@ -22,6 +22,7 @@ local registry = require("scripts.core.registry")
 local pace = require("scripts.core.pace")
 local holds = require("scripts.core.holds")
 local retry = require("scripts.core.retry")
+local network_words = require("scripts.network_words")
 
 local loop = {}
 
@@ -92,7 +93,8 @@ local function close_rest(project, socket)
   frontier.clear(project)
 end
 
-local function record_stamp(project, instance)
+local function record_stamp(project, instance, network)
+  project.network = network
   project.count = project.count + 1
   project.building = project.building + 1
   project.instance_ids[instance.id] = true
@@ -130,7 +132,8 @@ local function parked_key(project)
   local gate = project.gate
   if not gate then return nil end
   local item = gate.item
-  return table.concat({ gate.reason, item and item.name or "", item and item.have or "", #project.frontier,
+  return table.concat({ gate.reason, item and item.name or "", item and item.have or "", network_words.key(gate.network),
+    #project.frontier,
     #project.parked, #(project.awaiting or {}), project.count, project.building, #project.blocked }, "|")
 end
 
@@ -150,7 +153,7 @@ end
 -- must wait for its ore (copy_events.lua opens those).
 local function stamped(project, result)
   local instance = result.instance
-  record_stamp(project, instance)
+  record_stamp(project, instance, result.spot.network)
   if project.open_early and #(instance.sensors or {}) == 0 then
     instance.opened_early = true
     frontier.open(project, instance)
@@ -225,7 +228,7 @@ local function run_steps(project)
   local work, popped, last = pace.WORK_BUDGET, false, 0
   local room = #project.frontier > 0 and gates.room(project) or 0
   while #project.frontier > 0 do
-    if room <= 0 then project.gate = { reason = REASON.capacity } break end
+    if room <= 0 then project.gate = { reason = REASON.capacity, network = project.network } break end
     if work <= 0 or work < last then loop.queue_advance(project, 1) break end
     if not pace.ready(project) then holds.wait_busy(project) break end
     local cost, left, made = step(project, frontier.peek(project))

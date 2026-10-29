@@ -23,6 +23,7 @@ local designs_view = require("scripts.gui.designs_view")
 local project_text = require("scripts.gui.project_text")
 local retry = require("scripts.core.retry")
 local project_bulk = require("scripts.gui.project_bulk")
+local network_words = require("scripts.network_words")
 
 local projects_view = {}
 
@@ -46,6 +47,7 @@ local function shown(project)
       retries,
       tostring(outdated), tostring(updating),
       s.level, s.reason or "", s.count or "", s.unreachable or "", s.item and s.item.name or "",
+      network_words.key(s.network),
       s.item and s.item.have or "", project.count, project.building, frontier.pending(project),
       #list, last and last.tick or "", last and last.count or "",
     }, "|"),
