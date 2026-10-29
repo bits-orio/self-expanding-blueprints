@@ -37,6 +37,11 @@ function pools.set(force_index, name, ids)
   lib.pools[name] = once(ids)
 end
 
+-- Every pool of the force: {name = {design ids}}.
+function pools.all(force_index)
+  return pools_of_force(force_index) or {}
+end
+
 -- The designs of the pool `name`, in order (deleted ones left out), or nil.
 -- Each once, also from a pool kept before pools.set dropped repeats.
 function pools.designs(force_index, name)
@@ -61,6 +66,29 @@ function pools.of(design)
   end
   table.sort(names)
   return names
+end
+
+-- The design is in exactly the pools `names` (a set): it leaves the others
+-- (an emptied pool goes) and joins the end of each new one.
+function pools.place(design, names)
+  local lib = storage.libraries[design.force_index]
+  lib.pools = lib.pools or {}
+  local all = lib.pools
+  for name, ids in pairs(all) do
+    if not names[name] then
+      for i = #ids, 1, -1 do
+        if ids[i] == design.id then table.remove(ids, i) end
+      end
+      if #ids == 0 then all[name] = nil end
+    end
+  end
+  for name in pairs(names) do
+    local ids = all[name] or {}
+    all[name] = ids
+    local found = false
+    for _, id in ipairs(ids) do found = found or id == design.id end
+    if not found then ids[#ids + 1] = design.id end
+  end
 end
 
 -- A deleted design leaves every pool; an emptied pool goes.

@@ -96,6 +96,7 @@ end
 
 -- Registers the next blueprint; returns the parts its preparation handled.
 local function register_next(job, force_index)
+  local i = job.next
   local text = next_string(job)
   if not text then return 0 end
   local design, reason = library.register_string(force_index, text)
@@ -104,6 +105,8 @@ local function register_next(job, force_index)
     return 0
   end
   job.ids[#job.ids + 1] = design.id
+  local place = job.places and job.places[i]
+  if place then job.by_place[place] = design.id end
   local player = owner(job, force_index)
   if player then
     player.print({ "seb-message.registered", design.name, design.version })
@@ -114,13 +117,15 @@ end
 
 local function finish(job, force_index)
   drop(force_index)
-  local pool = books.pool(force_index, job.pool, job.ids)
+  local made = books.pools_from(force_index, job.held or {}, job.by_place or {})
   local player = owner(job, force_index)
   if player and #job.ids == 0 then
     cursor.say(player, design_text.error(job.failure or "not-a-blueprint", force_index))
   end
   -- A pool lists each design once, however often the book holds it.
-  if player and pool then player.print({ "seb-message.pooled", pool, #pools.designs(force_index, pool) }) end
+  for _, pool in ipairs(player and made or {}) do
+    player.print({ "seb-message.pooled", pool, #pools.designs(force_index, pool) })
+  end
   if player and job.unread then player.print({ "seb-message.book-unread", job.unread }) end
   window.refresh_designs(force_index, job.ids[1])
 end
@@ -148,11 +153,11 @@ scheduler.register(KIND, run)
 -- Nil once those that fit pass const.MAX_BOOK_PARTS in all.
 local function fitting(force_index, blueprints)
   local list, refused, room = {}, nil, const.MAX_BOOK_PARTS
-  for _, blueprint in ipairs(blueprints) do
+  for place, blueprint in ipairs(blueprints) do
     local parts = prepare.parts_within(blueprint, room)
     if parts and not prepare.too_many_parts(parts, force_index) then
       room = room - parts
-      list[#list + 1] = { blueprint = blueprint, parts = parts }
+      list[#list + 1] = { blueprint = blueprint, parts = parts, place = place }
     elseif library.oversized(force_index, blueprint) then
       refused = const.REASON.design_too_big
     else
@@ -165,12 +170,12 @@ end
 -- What the click may add: the book's blueprints that fit and the refusal
 -- for any left out, or nil and why none can be.
 local function addable(force_index, source)
-  local blueprints, over = books.blueprints_in(source)
+  local blueprints, over, held = books.blueprints_in(source)
   if over then return nil, books.TOO_BIG end
   local list, refused = fitting(force_index, blueprints)
   if not list then return nil, books.TOO_MANY_PARTS end
   if #list == 0 then return nil, refused or "not-a-blueprint" end
-  return list, refused
+  return list, refused, held
 end
 
 -- Starts adding the book `source` (a stack or a library record) for the
@@ -185,15 +190,18 @@ function book_queue.start(player, source)
   end
   drop(force_index)
   budget.charge(force_index, budget.COST.book_walk)
-  local list, refused = addable(force_index, source)
+  local list, refused, held = addable(force_index, source)
   if not list then return cursor.say(player, design_text.error(refused, force_index)) end
   storage.next_book_job = (storage.next_book_job or 0) + 1
   local inventory, records = copy_of(list, force_index)
   jobs()[force_index] = {
     id = storage.next_book_job, player_index = player.index, inventory = inventory, records = records,
-    count = #list, next = 1, ids = {}, pool = books.pool_name(source), library = library.of(force_index).inventory,
-    failure = refused,
+    count = #list, next = 1, ids = {}, library = library.of(force_index).inventory, failure = refused,
+    -- The book's pools, by the places of their blueprints in it; each
+    -- design id registered goes to its place (by_place).
+    held = held, places = {}, by_place = {},
   }
+  for i, entry in ipairs(list) do jobs()[force_index].places[i] = entry.place end
   scheduler.at(game.tick + 1, { kind = KIND, force_index = force_index, id = storage.next_book_job })
 end
 

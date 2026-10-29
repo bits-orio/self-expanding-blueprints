@@ -67,6 +67,7 @@ local CASES = {
   require("cases.seeds"),
   require("cases.retry"),
   require("cases.plugs"),
+  require("cases.shelves"),
 }
 
 local START_TICK = 60

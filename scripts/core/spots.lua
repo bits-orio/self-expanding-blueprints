@@ -117,7 +117,7 @@ function spots.on_map(project, socket, spot)
   spot.work.chunks = spot.work.chunks + spots.chunks(spot.footprint)
   local terrain = checks.terrain(surface, force, spot.footprint, project.rules)
   if terrain then return terrain end
-  local failed, where, looked = probes.check(surface, spot)
+  local failed, where, looked = probes.check(surface, spot, force)
   spot.work.probes = spot.work.probes + looked
   if failed then return spots.closed(failed, where) end
   local verdict = check_world(project, surface, force, spot, socket)

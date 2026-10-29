@@ -9,6 +9,7 @@
 
 local registry = require("scripts.core.registry")
 local library = require("scripts.core.library")
+local pools = require("scripts.core.pools")
 local designs_view = require("scripts.gui.designs_view")
 local grow_view = require("scripts.gui.grow_view")
 local projects_view = require("scripts.gui.projects_view")
@@ -69,6 +70,21 @@ local function back_bar(parent, design)
   name.style.width = 360
 end
 
+-- The pools the open design is in, as names to edit: a socket naming one
+-- can build the design.
+local function pools_bar(parent, design)
+  local bar = parent.add { type = "flow", direction = "horizontal" }
+  bar.style.padding = { 0, layout.PAD, 8, layout.PAD }
+  bar.style.vertical_align = "center"
+  bar.style.horizontal_spacing = 8
+  bar.add { type = "label", caption = { "seb-gui.pools" }, tooltip = { "seb-gui.pools-tooltip" } }
+  local field = bar.add {
+    type = "textfield", text = table.concat(pools.of(design), ", "), tooltip = { "seb-gui.pools-tooltip" },
+    lose_focus_on_confirm = true, tags = { seb = "set-pools", design = design.id },
+  }
+  field.style.width = 360
+end
+
 -- The sections scroll inside the body, which is never taller than the
 -- screen: with many designs and projects the window still fits.
 local function fill(player, frame)
@@ -82,6 +98,7 @@ local function fill(player, frame)
   local design = open_design(player)
   if design then
     back_bar(sections, design)
+    pools_bar(sections, design)
     grow_view.build(sections, player)
   else
     designs_view.build(sections, player)

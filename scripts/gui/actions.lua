@@ -3,6 +3,7 @@
 local const = require("scripts.const")
 local registry = require("scripts.core.registry")
 local library = require("scripts.core.library")
+local pools = require("scripts.core.pools")
 local books = require("scripts.core.books")
 local budget = require("scripts.core.budget")
 local projects = require("scripts.core.projects")
@@ -254,8 +255,28 @@ function actions.on_hover(event)
   route(event, hover)
 end
 
--- Enter in the design's name renames it, everywhere it shows.
+-- The pool names typed, split at commas, trimmed, empty ones dropped.
+local function pool_names(text)
+  local names = {}
+  for part in string.gmatch(text, "[^,]+") do
+    local name = part:match("^%s*(.-)%s*$")
+    if name ~= "" then names[name] = true end
+  end
+  return names
+end
+
+-- Enter in the design's name renames it, everywhere it shows; in its pools,
+-- puts it in exactly those.
 local confirmed = {
+  ["set-pools"] = function(player, tags, element)
+    local design = library.get(player.force.index, tags.design)
+    if not design then return end
+    pools.place(design, pool_names(element.text))
+    local now = pools.of(design)
+    element.text = table.concat(now, ", ")
+    cursor.say(player, #now > 0 and { "seb-message.pools-set", table.concat(now, ", ") } or { "seb-message.pools-none" })
+    window.refresh_force(player.force.index)
+  end,
   ["rename-design"] = function(player, tags, element)
     local design = library.get(player.force.index, tags.design)
     if not design then return end

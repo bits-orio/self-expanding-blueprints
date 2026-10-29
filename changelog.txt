@@ -1,4 +1,13 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.2.9
+Date: 2026-10-28
+  Features:
+    - Probes see buildings: an item signal for a building (a pole, a chest) holds where your team's building stands. The blueprint builder's sense signals (buildings, ghosts, ore, trees and rocks, water, enemies) narrow a probe to that kind, the other signals saying which.
+    - Pools in the window: the Pools field on a design's page puts it in any pools by name.
+    - The exported library puts each pool in a book of its own, and adding a book of books makes each labelled book in it a pool, so export and import round-trip.
+  Bugfixes:
+    - Adding an exported library no longer makes a pool called "Self-Expanding Blueprints" of every design.
+---------------------------------------------------------------------------------------------------
 Version: 0.2.8
 Date: 2026-10-28
   Features:
