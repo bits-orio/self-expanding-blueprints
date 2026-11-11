@@ -33,8 +33,10 @@ local CHEST = { name = "iron-chest", position = { x = 0.5, y = 0.5 } }
 local PROBES, COPIES = 1000, 300
 -- The Find's probed design fits only where its last probe, two tiles east
 -- of the chest, finds ore: beside the ore laid ORE_AT tiles east of the
--- search's centre, at the 140th spot it tries.
-local ORE_AT, FOUND_AT = 8, 6
+-- search's centre, at the 191st spot it tries. The returned point is the
+-- full blueprint's vanilla anchor, including the probes, one tile east of
+-- the chest's tile (not the centre of the buildable footprint alone).
+local ORE_AT, FOUND_AT = 8, 7
 local BUILDER_AT = { -10.5, 0 }
 
 local function name(text) return "fix_charges " .. text end
