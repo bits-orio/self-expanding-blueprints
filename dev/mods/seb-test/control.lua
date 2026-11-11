@@ -26,6 +26,7 @@ local CASES = {
   require("cases.frontier"),
   require("cases.compat"),
   require("cases.snapping"),
+  require("cases.anchor_markers"),
   require("cases.regressions"),
   require("cases.feedback"),
   require("cases.mining"),
