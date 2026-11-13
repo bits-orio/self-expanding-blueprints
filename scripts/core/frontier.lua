@@ -189,24 +189,43 @@ function frontier.take(project, socket)
   return true
 end
 
--- The socket tried goes to the parked list; the first one parked arms the
--- timer that brings them all back (kind "unpark", handled by loop.lua).
-function frontier.park(project, socket)
-  if not frontier.take(project, socket) then return end
-  local parked = project.parked
-  parked[#parked + 1] = socket
+-- The timer that looks at the parked sockets again (kind "unpark",
+-- handled by loop.lua), unless it is armed already.
+local function arm_unpark(project)
   if project.unpark_tick then return end
   project.unpark_tick = game.tick + const.NETWORK_RETRY
   scheduler.at(project.unpark_tick, { kind = "unpark", id = project.id })
 end
 
--- Parked sockets go to the back of the frontier, to be tried again.
-function frontier.unpark(project)
+-- The socket tried goes to the parked list; the first one parked arms the
+-- timer.
+function frontier.park(project, socket)
+  if not frontier.take(project, socket) then return end
+  local parked = project.parked
+  parked[#parked + 1] = socket
+  arm_unpark(project)
+end
+
+-- The parked sockets that pass `ready(socket)` go to the back of the
+-- frontier, to be tried again; the others stay parked and the timer is
+-- armed for them. A look at a parked socket is one engine lookup, so the
+-- timer can be short without the work of trying each. Returns how many
+-- went back.
+function frontier.unpark(project, ready)
   indexed(project)
   project.unpark_tick = nil
-  local parked = project.parked
+  local parked, back = project.parked, 0
   project.parked = {}
-  for _, socket in ipairs(parked) do push(project, socket) end
+  for _, socket in ipairs(parked) do
+    if ready(socket) then
+      push(project, socket)
+      back = back + 1
+    else
+      project.parked[#project.parked + 1] = socket
+    end
+  end
+  if #project.parked > 0 then arm_unpark(project) end
+  return back
 end
 
 -- The socket tried waits for the copy it grows from (socket.from) to be

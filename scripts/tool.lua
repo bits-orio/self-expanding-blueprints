@@ -22,6 +22,7 @@ local twins = require("scripts.core.twins")
 local loop = require("scripts.core.loop")
 local outlines = require("scripts.gui.outlines")
 local retry = require("scripts.core.retry")
+local undo = require("scripts.undo")
 
 local tool = {}
 
@@ -167,6 +168,8 @@ local function grow(player, surface, where)
   -- the player clicked twice.
   if not project and other == const.REASON.seed_occupied then return end
   if not project then return cursor.say(player, { "seb-reason." .. other }) end
+  -- Ctrl + Z takes the click back (undo.lua).
+  undo.note(player, project)
   cursor.say(player, { "seb-message.growing", design.name })
   tell_dropped(player, other)
 end

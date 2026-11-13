@@ -3,7 +3,7 @@
 -- when their instance completes, so growth runs exactly as fast as the
 -- robots. A gate holds the next socket until a completion (capacity), a
 -- retry timer, the map or the force's turn reopens it (holds.lua); a socket
--- no robots reach is parked on its own and retried slowly, and one whose
+-- no robots reach is parked on its own and tried again once they do, and one whose
 -- copy would stand on its parent, going for depletion, waits on its own
 -- until the parent is gone, so neither blocks the rest.
 
@@ -71,7 +71,7 @@ local function record_close(project, socket, result)
   if not MARKED[result.reason] then return end
   local position = result.position or socket.position
   local blocked = project.blocked
-  local entry = { position = position, reason = result.reason }
+  local entry = { position = position, reason = result.reason, tried = result.tried }
   blocked[#blocked + 1] = entry
   retry.keep(project, socket, entry)
   if #blocked > const.MAX_BLOCKED_KEPT then table.remove(blocked, 1) end
@@ -139,7 +139,8 @@ end
 
 -- A socket no robots reach is parked on its own; the first time it is, the
 -- history says where.
-local function park(project, socket)
+local function park(project, socket, result)
+  socket.reach_at = result.reach_at
   if not socket.unreachable then
     socket.unreachable = true
     history.add(project, { kind = "unreachable", position = socket.position })
@@ -204,7 +205,7 @@ local function gated(project, socket, result)
     return 1, false
   end
   if result.reason ~= REASON.no_network then return holds.hold(project, result) end
-  park(project, socket)
+  park(project, socket, result)
   return 1, false
 end
 
@@ -265,11 +266,25 @@ scheduler.register("advance", function(item, now)
   advance(project)
 end)
 
+-- The parked sockets robots reach by now go back to be tried; the rest
+-- stay parked and are looked at again (frontier.unpark). Each look is one
+-- engine lookup, charged to the team like a probe; while the team's share
+-- of server time is used up nothing is looked at and the timer comes
+-- round again.
 scheduler.register("unpark", function(item)
   local project = storage.projects[item.id]
   if not project or project.state == STATE.stopped then return end
-  frontier.unpark(project)
-  loop.queue_advance(project, 1)
+  local surface, force = game.surfaces[project.surface_index], game.forces[project.force_index]
+  if not (surface and force) then return end
+  local looks, ready = 0, pace.ready(project)
+  local back = frontier.unpark(project, function(socket)
+    if not ready then return false end
+    if not socket.reach_at then return true end
+    looks = looks + 1
+    return gates.reached(surface, force, socket.reach_at)
+  end)
+  work.charge(project.force_index, work.new { probes = looks })
+  if back > 0 then loop.queue_advance(project, 1) end
 end)
 
 return loop

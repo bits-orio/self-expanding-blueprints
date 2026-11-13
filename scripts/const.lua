@@ -21,6 +21,9 @@ const.PROBE = "seb-probe"
 const.PORT = "seb-port"
 -- Keep clear: a tile the design needs empty (clearance.lua).
 const.CLEAR = "seb-keep-clear"
+-- The mark of a project a player started by hand, as a neutral ghost on
+-- the player's undo queue (undo_mark.lua); nothing to see, select or build.
+const.UNDO_MARK = "seb-undo-mark"
 const.MARKERS = {
   [const.SOCKET] = true, [const.ENTRY] = true, [const.SENSOR] = true, [const.PROBE] = true, [const.PORT] = true,
   [const.CLEAR] = true, [const.ANCHOR] = true,
@@ -126,7 +129,7 @@ const.QUIET_TICKS = 30          -- recount once built/destroyed events go quiet 
 const.MAX_RECOUNT_WAIT = 120    -- ...but never later than this after the first event
 const.STALL_TICKS = 3 * 3600    -- no progress for this long marks an instance stalled
 const.MATERIALS_RETRY = 180     -- re-check a materials-gated socket this often
-const.NETWORK_RETRY = 600       -- re-try sockets parked because no robots reach them
+const.NETWORK_RETRY = 120       -- look again whether robots reach the parked sockets (one lookup each)
 const.ADVANCE_BUDGET = 4        -- stamps attempted per project per scheduler run
 const.MAX_BUILDING = 2          -- default instances in flight per project
 const.MAX_BLOCKED_KEPT = 50     -- blocked sockets a project remembers for the overlay

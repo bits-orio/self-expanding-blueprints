@@ -83,7 +83,24 @@ local frame = marker("seb-grow-frame", "frame")
 frame.hidden = true
 frame.selection_box = nil
 
+-- The undo mark (scripts/core/undo_mark.lua) only ever stands as a ghost
+-- of the neutral force: it draws nothing and nobody can select, blueprint
+-- or deconstruct it. The engine makes a ghost only of an entity some item
+-- places, so it has a hidden item too; nobody ever holds it.
+local undo_mark = marker(require("scripts.const").UNDO_MARK, "anchor")
+undo_mark.hidden = true
+undo_mark.sprites = require("util").empty_sprite()
+undo_mark.activity_led_sprites = require("util").empty_sprite()
+undo_mark.draw_circuit_wires = false
+undo_mark.selection_box = nil
+undo_mark.selectable_in_game = false
+undo_mark.minable = nil
+-- No "not-blueprintable": the engine makes no ghost of such an entity.
+undo_mark.flags = { "player-creation", "not-on-map", "not-deconstructable", "not-upgradable",
+  "not-selectable-in-game", "not-in-kill-statistics", "not-flammable", "placeable-off-grid" }
+
 data:extend({
+  undo_mark,
   marker("seb-socket", "socket"),
   marker("seb-entry", "entry"),
   sensor,
@@ -100,4 +117,5 @@ data:extend({
   item("seb-keep-clear", "clear", "c[clear]"),
   item("seb-anchor", "anchor", "d[anchor]"),
   item("seb-grow-frame", "frame", "e[frame]"),
+  item(require("scripts.const").UNDO_MARK, "anchor", "f[undo-mark]"),
 })

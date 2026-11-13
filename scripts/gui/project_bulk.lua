@@ -4,6 +4,7 @@
 -- no row-by-row clicking.
 
 local projects = require("scripts.core.projects")
+local removal = require("scripts.core.removal")
 local cursor = require("scripts.cursor")
 
 local project_bulk = {}
@@ -21,8 +22,9 @@ local ACTS = {
     projects.discard(project)
     return true
   end,
-  stop = function(project)
-    projects.stop(project)
+  -- Shift + click: the copies robots have not finished go with each.
+  stop = function(project, _, shift)
+    if shift then removal.stop(project, removal.UNBUILT) else projects.stop(project) end
     return true
   end,
 }
@@ -37,13 +39,14 @@ function project_bulk.build(holder)
   end
 end
 
--- `list`: the projects the player's window lists.
-function project_bulk.run(player, op, list)
+-- `list`: the projects the player's window lists; `shift`: the click was a
+-- Shift + click.
+function project_bulk.run(player, op, list, shift)
   local act = ACTS[op]
   if not act then return end
   local n = 0
   for _, project in ipairs(list) do
-    if storage.projects[project.id] and act(project, player) then n = n + 1 end
+    if storage.projects[project.id] and act(project, player, shift) then n = n + 1 end
   end
   cursor.say(player, { "seb-message.bulk-" .. op, n })
 end

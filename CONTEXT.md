@@ -109,6 +109,9 @@ A socket whose child would stand on the instance it grows from while that instan
 **Superforce**:
 A project option, "Replace buildings in the way" (`superforce`; a Ctrl + Shift paste of the design does the same): the force's own buildings in a copy's way are marked for removal and the copy is built anyway, as a superforced paste builds (D39). The copy it grows from counts too when it is the only copy in the way, so a design can grow over its last copy (D54); a part whose twin already stands there is left as it is.
 
+**Undo mark**:
+The ghost of `seb-undo-mark` (neutral force, nothing to see) that stands where a project a player started by hand began, built for that player as one item on their undo queue: Ctrl + Z stops the project and retires every copy it placed (D58).
+
 **Closed socket**:
 A socket that will never stamp, with a reason: joined, water, cliff, building, no resource, uncharted, off-grid, misaligned, stamp short, overlaps its parent, parent retired, outside the area, count reached, unknown design, invalid design. Joins, area edges, counts and retired parents are the normal shape of growth and are only counted; the rest are marked on the map. Once its count is reached a project closes every socket left at once, and its history says so once.
 

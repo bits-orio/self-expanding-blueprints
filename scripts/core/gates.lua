@@ -18,6 +18,17 @@ local function points_of(where)
   return { { x = (l + r) / 2, y = (t + b) / 2 }, { x = l, y = t }, { x = r, y = t }, { x = l, y = b }, { x = r, y = b } }
 end
 
+-- The point a copy is in reach by: its footprint's middle. No network
+-- reaching it means none builds the copy (gates.networks_at).
+function gates.reach_point(footprint)
+  return points_of(footprint)[1]
+end
+
+-- Whether any construction network of the force reaches the point.
+function gates.reached(surface, force, point)
+  return #surface.find_logistic_networks_by_construction_area(point, force) > 0
+end
+
 -- The construction networks whose robots can build at `where` (a position,
 -- or a footprint): none unless one reaches its middle. A player's personal
 -- roboport is a network of its own (a mobile cell) that builds from the
@@ -28,7 +39,7 @@ end
 function gates.networks_at(surface, force, where)
   local fixed, personal, seen = {}, {}, {}
   local points = points_of(where)
-  if #surface.find_logistic_networks_by_construction_area(points[1], force) == 0 then return {} end
+  if not gates.reached(surface, force, points[1]) then return {} end
   for _, point in ipairs(points) do
     for _, network in pairs(surface.find_logistic_networks_by_construction_area(point, force)) do
       if not seen[network.network_id] then
@@ -117,13 +128,15 @@ function gates.adds_cost(spot)
 end
 
 -- What a stamp at the spot takes from its supply: the design's cost, and
--- those explosives and that landfill.
+-- those explosives and that landfill, less the drills left out for having
+-- nothing to mine (spot.dry_items, checks.lua).
 function gates.cost_of(spot)
-  if not gates.adds_cost(spot) then return spot.prepared.cost end
+  if not (gates.adds_cost(spot) or spot.dry_items) then return spot.prepared.cost end
   local cost, lines = {}, {}
   for _, item in ipairs(spot.prepared.cost) do add_line(cost, lines, item.name, item.quality, item.count) end
   for explosive, count in pairs(spot.cliffs or {}) do add_line(cost, lines, explosive, "normal", count) end
   for item, count in pairs(spot.cover or {}) do add_line(cost, lines, item, "normal", count) end
+  for _, item in pairs(spot.dry_items or {}) do add_line(cost, lines, item.name, item.quality, -item.count) end
   return cost
 end
 

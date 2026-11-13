@@ -6,7 +6,7 @@ Spike S1 measured that this pre-check predicts forced mode exactly, including mi
 
 Supporting choices:
 
-- **Reasons name the obstacle.** Water, cliff, building, no resource under a drill, uncharted, off-grid, joined another instance. The overlay draws the reason at the obstacle's map position.
+- **Reasons name the obstacle.** Water, cliff, building, nothing to mine for any drill of the copy (a drill with nothing to mine is left out while another has, as a hand paste leaves it out), uncharted, off-grid, joined another instance. The overlay draws the reason at the obstacle's map position.
 - **Tiles get their own check.** The API has no tile placement check. A tile is refused when the item that places it has a plain placement condition that the tile already there collides with, which is how concrete over water is caught. Inverted and tile-list conditions are left to the engine.
 - **A design's own landfill excuses water.** `build_blueprint` lays tiles first, so an entity standing on the design's own ground tiles is placed over water although `can_place_entity` said no beforehand.
 - **Cliffs under parts stop growth, unless the team can blow them up.** Only a cliff under an entity part, a design tile or a Keep clear tile stops a copy; one in an empty gap of the footprint does not (the engine places both parts and never touches it). With cliff explosives researched (`LuaForce.cliff_deconstruction_enabled`) such a cliff is blown up instead: forced mode marks the cliffs entity ghosts collide with, the stamp orders the ones under tiles (tiles collide with no cliff), the materials gate waits for one explosive per cliff, and a stamp rolled back takes the marks back. A plan treats such a spot as fitting.

@@ -2,7 +2,7 @@
 
 A project grows breadth-first from a first-in, first-out frontier of open sockets. Three gates hold the frontier at its head without closing anything: capacity (at most `MAX_BUILDING`, by default two, of the project's copies under construction at once), missing materials (the network covering the next copy lacks an item it costs) and chunks (the map under it is still generating). Capacity reopens on an instance's completion, and chunks on `on_chunk_generated` for the project's surface; items arriving in a network have no engine event, so a materials wait retries on a timer.
 
-A socket that no construction robots reach is different: that is a property of its place, not of the project. Holding the head for it would stop every other socket forever, so it is parked on its own list, the rest of the frontier goes on, and parked sockets return to the back of the frontier every `NETWORK_RETRY` ticks (ten seconds). Coverage has no engine event either: roboports gain power and robots silently. A project keeps growing while parked sockets remain, and the window says why.
+A socket that no construction robots reach is different: that is a property of its place, not of the project. Holding the head for it would stop every other socket forever, so it is parked on its own list, the rest of the frontier goes on, and parked sockets are looked at every `NETWORK_RETRY` ticks (two seconds; one engine lookup each, at the middle of the copy's footprint, where the gate itself asks), and those robots reach by then return to the back of the frontier. Coverage has no engine event either: roboports gain power and robots silently. A project keeps growing while parked sockets remain, and the window says why.
 
 Supporting choices:
 

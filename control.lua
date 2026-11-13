@@ -31,6 +31,8 @@ local builder_view = require("scripts.gui.builder_view")
 local help_view = require("scripts.gui.help_view")
 local outlines = require("scripts.gui.outlines")
 local retry = require("scripts.core.retry")
+local undo = require("scripts.undo")
+local undo_mark = require("scripts.core.undo_mark")
 require("scripts.remote.interface")
 
 projects.hooks.changed = window.refresh_project
@@ -94,7 +96,9 @@ script.on_event(defines.events.on_blueprint_settings_pasted, builder.on_blueprin
 script.on_event(defines.events.on_object_destroyed, function(event)
   builder.on_object_destroyed(event)
   tracking.on_object_destroyed(event)
+  undo_mark.on_object_destroyed(event)
 end)
+script.on_event(defines.events.on_undo_applied, undo.on_undo_applied)
 script.on_event(defines.events.on_post_entity_died, tracking.on_post_entity_died)
 script.on_event({ defines.events.on_robot_mined_entity, defines.events.on_player_mined_entity }, function(event)
   tracking.on_mined(event)

@@ -118,12 +118,14 @@ local function kept_parts(plan, ctx, record)
   return kept
 end
 
--- A stamp places every part, or its twin stands. One that places nothing
--- at all is short even so: it would be a copy owning nothing, finished at
--- once on others' parts (a socket on its own plug, say).
+-- A stamp places every part, or its twin stands; the drills the check left
+-- out for having nothing to mine (plan.dry, checks.lua) get no ghost from
+-- the engine and are not missed. One that places nothing at all is short
+-- even so: it would be a copy owning nothing, finished at once on others'
+-- parts (a socket on its own plug, say).
 local function verdict(record, plan, ctx)
   if not record.aligned then return const.REASON.misaligned end
-  local missing = plan.prepared.entity_count - record.entities
+  local missing = plan.prepared.entity_count - record.entities - (plan.dry or 0)
   if missing <= 0 then return nil end
   if plan.superforce and record.entities > 0 and kept_parts(plan, ctx, record) >= missing then return nil end
   return const.REASON.stamp_short

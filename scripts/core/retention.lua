@@ -22,6 +22,7 @@ local previews = require("scripts.core.previews")
 local depletion = require("scripts.core.depletion")
 local instances = require("scripts.core.instances")
 local overlay = require("scripts.render.overlay")
+local undo_mark = require("scripts.core.undo_mark")
 
 local retention = {}
 
@@ -65,10 +66,12 @@ end
 
 -- Takes everything a project drew or asked for off the map and out of the
 -- queues: its marks, its copies' marks, its look-only ghosts, its open
--- sockets and what its copies wait for at the ore. Its copies stay. With
+-- sockets, what its copies wait for at the ore and its place on a player's
+-- undo queue (undo_mark.lua). Its copies stay. With
 -- `keep_drills` (a finished project forgotten) its copies' drills stay
 -- watched.
 function retention.let_go(project, keep_drills)
+  undo_mark.drop(project)
   previews.clear(project)
   frontier.clear(project)
   overlay.drop_project(project.id)

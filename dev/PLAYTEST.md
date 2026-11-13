@@ -24,6 +24,15 @@ Each line is an action, then the expected result.
 - [x] The projects list shows one row per project: locate, a status light, the design icon, "#1 Solar cell Growing" with counts, and why it waits when it does; buttons inside the window, no horizontal scrollbar. (0.2)
 - [x] Hovering a project's text shows its recent history with times ("5 s ago: Blocked by water at 30, 12 (×3)"), fresh on every hover. (0.2)
 - [x] Stopping a project takes every mark it drew off the map (19 render objects before, 0 after). (0.2)
+- [x] Click with a design in hand, then Ctrl + Z: the project stops, its ghosts and built copies go, and the undo queue is empty again (1 item after the click, 0 after). (2026-11-13, GUI client)
+- [x] Click with a design in hand, then stop the project: its undo item leaves the queue (1 item, then 0), and Ctrl + Z after it does nothing of ours. (2026-11-13, GUI client; stopped through the remote interface)
+- [x] The undo mark where a project began shows nothing and cannot be selected. (2026-11-13, game screenshot beside an anchor ghost)
+- [x] Shift + click on a project's Stop, and on Stop all: the copies under construction go, the finished ones stay (three finished copies and one with 5 ghosts left: the ghosts go, 12 panels stay). (2026-11-13, GUI client)
+- [x] Ctrl + Y after an undone click changes nothing and leaves both queues empty. (2026-11-13, GUI client)
+- [x] Two drills, ore in reach of one: the copy is built with that drill alone and no mark; with no ore for either, a red mark reads "Nothing to mine in reach of any mining drill". (2026-11-13, GUI client, game screenshot)
+- [x] A socket naming a pool none of whose designs fits: the red mark reads "No design of the book fits here" with a line for each design and its reason. (2026-11-13, GUI client, game screenshot)
+- [x] A row grown from a personal roboport alone stops at the edge of its reach ("Out of reach of every roboport, a personal one included", 20 copies); 5 seconds after the player moves 20 tiles on, 6 more are built. (2026-11-13, GUI client)
+- [ ] Ctrl + Z in multiplayer: only the player who clicked has the project on their queue; a teammate stopping it takes it off that queue.
 - [x] A finished project keeps a disabled pause button, so its stop button never moves under the cursor.
 - [x] Locate (the reticle) on a growing project: remote view goes to the copies under construction with a blinking outline; right-click shows the whole field.
 - [ ] Locate from the map editor: a map tag with the project's place is printed instead.

@@ -19,6 +19,8 @@ local marks = {}
 
 local COLOR = draw.COLOR
 local MAX = const.MAX_DRAWN_SOCKETS
+-- Tiles between the lines of a mark that says several things.
+local LINE_HEIGHT = 0.45
 
 -- Nothing of a stopped project is drawn: it has left the window.
 local function base_of(project)
@@ -70,16 +72,30 @@ local function socket_mark(base, socket, key, network)
   return objects
 end
 
+-- What a blocked mark says: the reason, or under a socket that names a
+-- pool a line for each design tried with what stopped it (walk.lua).
+local function blocked_lines(entry)
+  if not entry.tried then return { { "seb-reason." .. entry.reason } } end
+  local lines = { { "seb-overlay.none-fits" } }
+  for _, tried in ipairs(entry.tried) do
+    lines[#lines + 1] = { "seb-overlay.tried", tried.name or "?", { "seb-reason." .. tried.reason } }
+  end
+  return lines
+end
+
 local function cross(base, entry)
-  return {
+  local objects = {
     rendering.draw_sprite(draw.with(base, {
       sprite = "seb-overlay-blocked", tint = COLOR.blocked, x_scale = 0.5, y_scale = 0.5, target = entry.position,
     })),
-    rendering.draw_text(draw.with(base, {
-      text = { "seb-reason." .. entry.reason }, color = COLOR.blocked, scale = 0.9,
-      alignment = "center", target = { entry.position.x, entry.position.y + 0.45 },
-    })),
   }
+  for i, line in ipairs(blocked_lines(entry)) do
+    objects[#objects + 1] = rendering.draw_text(draw.with(base, {
+      text = line, color = COLOR.blocked, scale = 0.9, alignment = "center",
+      target = { entry.position.x, entry.position.y + 0.45 + (i - 1) * LINE_HEIGHT },
+    }))
+  end
+  return objects
 end
 
 -- Brings `set` (item -> mark) in line with `items`: an item keeps the mark

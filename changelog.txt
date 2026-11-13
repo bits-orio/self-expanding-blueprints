@@ -1,4 +1,16 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.2.11
+Date: 2026-11-13
+  Features:
+    - Ctrl + Z takes back a click made with a design in hand or with the area tool: the project stops and every copy it placed is removed. Only projects you start by hand are on your undo queue.
+    - Shift + click on a project's Stop button, or on Stop all, also removes the copies robots have not finished.
+    - A copy is built without the mining drills that have nothing to mine, as a pasted blueprint leaves them out, as long as one of its drills has. The materials gate does not wait for the drills left out.
+    - When none of a pool's designs fits, the red mark lists each design with what stopped it.
+  Changes:
+    - A spot out of robot reach is placed within two seconds of a roboport or a personal roboport reaching it (ten before). Each look is one lookup charged to the team's share of server time.
+    - "No resource under a mining drill" now reads "Nothing to mine in reach of any mining drill": it closes a spot only when no drill of the copy has anything to mine.
+    - The remote stop_project takes a second argument: "unbuilt" removes the copies under construction, "all" every copy.
+---------------------------------------------------------------------------------------------------
 Version: 0.2.10
 Date: 2026-10-28
   Changes:

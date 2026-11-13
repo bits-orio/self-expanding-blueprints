@@ -6,6 +6,8 @@
 -- design at the part cap. The socket then keeps where the walk got to
 -- (socket.walk, in storage) and the next step goes on from there, so the
 -- first design that fits still wins and none is tried twice at that spot.
+-- When none of a pool fits, the socket's mark names the first few designs
+-- with what stopped each.
 
 local const = require("scripts.const")
 local budget = require("scripts.core.budget")
@@ -20,6 +22,9 @@ local REASON = const.REASON
 -- The part cap's default, for a force without one: however long a pool,
 -- its step is then no bigger than a step of one big design.
 local UNCAPPED_PARTS = 5000
+
+-- A mark names at most this many of a pool's designs with their reasons.
+local MAX_TRIED = 4
 
 local function ceiling(force_index)
   local cap = limits.of(force_index, "design_parts")
@@ -43,12 +48,24 @@ local function won(socket, state, i, result, checked)
   return result
 end
 
--- No design fits: the first one's reason closes the socket.
+-- What a design that did not fit said: the first one's reason and place
+-- close the socket, and the first few are kept by name for its mark.
+local function note(state, design, result)
+  state.first = state.first or { reason = result.reason, position = result.position }
+  local tried = state.tried or {}
+  state.tried = tried
+  if #tried < MAX_TRIED then tried[#tried + 1] = { name = design.name, reason = result.reason } end
+end
+
+-- No design fits: the first one's reason closes the socket. A pool's
+-- socket also says what each of its designs said (result.tried), so its
+-- mark shows that every one of them was tried.
 local function lost(socket, state, tally, checked)
   socket.walk = nil
   local first = state.first or { reason = REASON.unknown_design, position = socket.position }
   local result = spots.closed(first.reason, first.position)
   result.work, result.checked = tally, checked
+  if state.tried and #state.tried > 1 then result.tried = state.tried end
   return result
 end
 
@@ -66,9 +83,9 @@ function walk.designs(project, socket, candidates, try)
     local result = try(project, socket, candidates[i])
     checked = checked + result.checked
     if result.kind ~= "closed" then return won(socket, state, i, result, checked) end
-    state.first = state.first or { reason = result.reason, position = result.position }
+    note(state, candidates[i], result)
     -- A materials wait was that design's; the next one starts afresh.
-    socket.waiting = nil
+    socket.waiting, socket.dry_items = nil, nil
     if i == #candidates then return lost(socket, state, result.work, checked) end
     spent = spent + work.charge(force_index, result.work)
   end

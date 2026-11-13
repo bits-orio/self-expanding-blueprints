@@ -5,6 +5,7 @@
 
 local const = require("scripts.const")
 local projects = require("scripts.core.projects")
+local removal = require("scripts.core.removal")
 local twins = require("scripts.core.twins")
 local instances = require("scripts.core.instances")
 local growth = require("scripts.core.growth")
@@ -110,10 +111,17 @@ function interface.resume_project(project_id)
   return project ~= nil and projects.resume(project)
 end
 
-function interface.stop_project(project_id)
+-- `remove` (optional): "unbuilt" also removes the copies robots have not
+-- finished, "all" every copy the project placed.
+function interface.stop_project(project_id, remove)
   local project = storage.projects[project_id]
-  if project then projects.stop(project) end
-  return project ~= nil
+  if not project then return false end
+  if remove == removal.UNBUILT or remove == removal.ALL then
+    removal.stop(project, remove)
+  else
+    projects.stop(project)
+  end
+  return true
 end
 
 -- Its blocked sockets (the reasons the map can stop being: a building,

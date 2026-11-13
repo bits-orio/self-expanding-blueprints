@@ -26,6 +26,7 @@ local help_view = require("scripts.gui.help_view")
 local design_text = require("scripts.gui.design_text")
 local book_queue = require("scripts.gui.book_queue")
 local previews = require("scripts.core.previews")
+local removal = require("scripts.core.removal")
 
 -- How long a project's copies stay outlined after its locate button.
 local LOCATE_OUTLINE_TICKS = 600
@@ -129,9 +130,17 @@ local click = {
   end,
   ["pause-project"] = with_project(projects.pause),
   ["resume-project"] = with_project(projects.resume),
-  ["stop-project"] = with_project(projects.stop),
+  -- Shift + click: the copies robots have not finished go with it.
+  ["stop-project"] = function(player, tags, _, event)
+    local project = registry.project(tags.project)
+    if not (project and project.force_index == player.force.index) then return window.refresh(player) end
+    if not event.shift then return projects.stop(project) end
+    cursor.say(player, { "seb-message.stopped-removing", removal.stop(project, removal.UNBUILT) })
+  end,
   ["retry-project"] = with_project(projects.retry),
-  ["bulk-projects"] = function(player, tags) project_bulk.run(player, tags.op, projects_view.listed(player)) end,
+  ["bulk-projects"] = function(player, tags, _, event)
+    project_bulk.run(player, tags.op, projects_view.listed(player), event.shift)
+  end,
   ["toggle-finished"] = function(player, _, element) projects_view.toggle_finished(player, element) end,
   ["build-project"] = with_project(projects.build),
   ["list-copies"] = with_project(function(project, player) copies_view.open(player, project) end),

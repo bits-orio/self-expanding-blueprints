@@ -183,20 +183,54 @@ local function check_part(c, e, x, y, facing)
   if why then return why, where or { x = x, y = y } end
 end
 
+-- A mining drill with nothing to mine in its area gets no ghost from the
+-- engine (measured on 2.1.23: ore anywhere in the mining area will do), in
+-- a hand paste as in a stamp. Such a drill is left out of the copy, as a
+-- hand paste leaves it out, and the materials gate does not ask for its
+-- item (c.dry_items, by item and quality).
+local function leave_out(c, e)
+  c.dry = c.dry + 1
+  local items = prototypes.entity[e.name].items_to_place_this
+  local item = items and items[1]
+  if not item then return end
+  local quality = e.quality or "normal"
+  local key = item.name .. "/" .. quality
+  local line = c.dry_items[key] or { name = item.name, quality = quality, count = 0 }
+  c.dry_items[key] = line
+  line.count = line.count + (item.count or 1)
+end
+
+-- Every entity part: nil, or why the copy cannot be placed and where. Dry
+-- drills are left out while another drill of the copy has something to
+-- mine; a copy none of whose drills has is refused at the first of them.
+local function check_parts(c, plan)
+  local reason, where, dry_at
+  placement.each_part(plan.prepared, plan.position, plan.direction, function(e, x, y, facing)
+    local why, at = check_part(c, e, x, y, facing)
+    if why == REASON.no_resource then
+      leave_out(c, e)
+      dry_at = dry_at or at
+      return false
+    end
+    reason, where = why, at
+    return reason ~= nil
+  end)
+  if reason then return reason, where end
+  if c.dry > 0 and c.dry >= (plan.prepared.drill_count or 0) then return REASON.no_resource, dry_at end
+end
+
 local function check_entities(surface, force, plan, w)
   local c = {
     surface = surface, force = force, plan = plan, water = w, removable = force.cliff_deconstruction_enabled, met = 0,
+    dry = 0, dry_items = {},
     args = {
       name = "", position = { x = 0, y = 0 }, direction = 0, force = force,
       build_check_type = defines.build_check_type.blueprint_ghost, forced = true,
     },
   }
-  local reason, where
-  placement.each_part(plan.prepared, plan.position, plan.direction, function(e, x, y, facing)
-    reason, where = check_part(c, e, x, y, facing)
-    return reason ~= nil
-  end)
+  local reason, where = check_parts(c, plan)
   plan.in_way = c.met
+  if not reason and c.dry > 0 then plan.dry, plan.dry_items = c.dry, c.dry_items end
   return reason, where
 end
 
@@ -221,9 +255,12 @@ end
 -- of the landfill the engine lays on water under it, plan.cover = {[item] =
 -- count} (nil when none; water.lua). plan.in_way counts the entity parts it
 -- found something in the way of, whatever came of it; plan.water_tiles and
--- plan.water_looks what it looked at for water.
+-- plan.water_looks what it looked at for water. plan.dry counts the mining
+-- drills left out for having nothing to mine, and plan.dry_items their
+-- items (nil when none).
 function checks.obstacles(surface, force, plan)
   plan.cliffs, plan.cliff_entities, plan.cover, plan.in_way = nil, nil, nil, 0
+  plan.dry, plan.dry_items = nil, nil
   local w = water.context(surface, force, plan)
   local reason, where = first_obstacle(surface, force, plan, w)
   local cover

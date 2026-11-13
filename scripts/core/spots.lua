@@ -47,7 +47,11 @@ local function materials_gate(project, surface, force, spot, socket)
   spot.network = network
   local first_copy = socket.kind == "seed" and project.id ~= nil
   if ok or (why == REASON.no_network and first_copy) then return nil end
-  return gate(why, item, network)
+  local held = gate(why, item, network)
+  -- Where robots must reach for it (gates.reach_point), for the parked
+  -- socket's cheap look (frontier.unpark).
+  if why == REASON.no_network then held.reach_at = gates.reach_point(spot.footprint) end
+  return held
 end
 
 -- Enemy buildings near the spot, and water a project told to bring no
@@ -85,6 +89,8 @@ local function check_world(project, surface, force, spot, socket)
   local nearby = check_surroundings(project, surface, spot.footprint)
   if nearby then return nearby end
   if socket.waiting then
+    -- The drills the last check left out are not waited for.
+    spot.dry_items = socket.dry_items
     local held = materials_gate(project, surface, force, spot, socket)
     if held then return held end
   end
@@ -93,7 +99,7 @@ local function check_world(project, surface, force, spot, socket)
   if reason then return spots.closed(reason, where) end
   if socket.waiting and not gates.adds_cost(spot) then return nil end
   local held = materials_gate(project, surface, force, spot, socket)
-  if held then socket.waiting = true end
+  if held then socket.waiting, socket.dry_items = true, spot.dry_items end
   return held
 end
 
