@@ -5,7 +5,8 @@
 --              scheduler runs and all end at the new version; asking again
 --              queues none twice, and a copy removed meanwhile is passed over
 --   research:  a research upgrade of 40 copies goes the same way
---   big:       a copy of 1,600 lamps is updated in one short piece (INFO);
+--   big:       a copy of 1,600 lamps is updated in one short piece (INFO),
+--              things with no prototype flags lying where it grows;
 --              a version whose blueprint coordinates moved 3 tiles is laid
 --              where the copy stands, every lamp kept
 --   forgotten: a finished mining project that removes copies whose ore runs
@@ -190,6 +191,26 @@ local function all_done()
   check.eq(name("every research copy ends updated"), at_version(t.research_p, 2), COPIES)
 end
 
+-- Lays things whose prototype sets no flags (LuaEntityPrototype.flags is
+-- nil for them) along the row under the copy, where the new version's extra
+-- lamp goes: an update in place has to look past them, not fail on them.
+local function flagless(surface, fp)
+  local laid = {}
+  for proto_name, proto in pairs(prototypes.entity) do
+    if proto.flags == nil then
+      local ok, e = pcall(surface.create_entity, { name = proto_name, position = { fp.left + 0.5, fp.bottom + 0.5 }, force = "neutral" })
+      if ok and e and e.valid then
+        laid[#laid + 1] = proto_name
+        for x = fp.left + 1.5, fp.right do
+          pcall(surface.create_entity, { name = proto_name, position = { x, fp.bottom + 0.5 }, force = "neutral" })
+        end
+        if #laid == 3 then break end
+      end
+    end
+  end
+  check.info(name("flagless things under the big copy: " .. (#laid > 0 and table.concat(laid, ", ") or "none could be made")))
+end
+
 -- The big copy, built by script, moves to a version with one lamp more.
 local function big_update(surface)
   local t = s()
@@ -199,6 +220,7 @@ local function big_update(surface)
     ghost.revive { raise_revive = true }
   end
   rig.design(lamps(SIDE * SIDE + 1), "fu big")
+  flagless(surface, fp)
   local profiler = helpers.create_profiler()
   local ok, why = rig.call("update_instance", t.big)
   profiler.stop()

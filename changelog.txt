@@ -1,4 +1,9 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.2.12
+Date: 2026-11-16
+  Bugfixes:
+    - Fixed a crash ("attempt to index field 'flags'") when a copy was updated in place while something without prototype flags was where its new parts go, such as a lightning strike on Fulgora.
+---------------------------------------------------------------------------------------------------
 Version: 0.2.11
 Date: 2026-11-13
   Features:

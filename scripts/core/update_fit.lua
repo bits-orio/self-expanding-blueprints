@@ -34,7 +34,9 @@ local creation = {}
 local function is_building(name)
   local known = creation[name]
   if known == nil then
-    known = prototypes.entity[name].flags["player-creation"] == true
+    -- flags is nil on a prototype that sets none (fire, smoke, explosions).
+    local flags = prototypes.entity[name].flags
+    known = flags ~= nil and flags["player-creation"] == true
     creation[name] = known
   end
   return known
