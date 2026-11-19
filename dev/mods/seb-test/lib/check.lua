@@ -63,8 +63,10 @@ end
 function check.done()
   local t = storage.tally or { pass = 0, fail = 0 }
   say(string.format("DONE pass=%d fail=%d", t.pass, t.fail))
-  -- Test mode (2.1.24+) ends the run at once, with exit 1 on a failure.
-  script.finish_test(t.fail == 0)
+  -- Test mode (2.1.24+) ends the run at once, with exit 1 on a failure. An
+  -- older engine has no such call (reading it throws): its --benchmark run
+  -- goes on to the tick limit.
+  pcall(function() script.finish_test(t.fail == 0) end)
 end
 
 return check

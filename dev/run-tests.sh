@@ -10,6 +10,8 @@
 # a connected player (index 1, admin, no character) so charting works. seb-test
 # calls script.finish_test(failures == 0) after SEB_TEST DONE, which ends the
 # run at once; running out of ticks exits 0, so the DONE marker is the proof.
+# An engine before 2.1.24 has no test mode: the save is advanced with
+# --benchmark there (no player, the whole tick limit).
 #
 #   usage: dev/run-tests.sh [base|space-age ...]     (no args = both sets)
 #
@@ -41,6 +43,14 @@ if [ ${#SETS[@]} -eq 0 ]; then SETS=(base space-age); fi
 
 # "2.1" from "Version: 2.1.23 (build ...)".
 ENGINE_VERSION="$("$FACTORIO" --version 2>/dev/null | sed -nE 's/^Version: ([0-9]+\.[0-9]+)\..*/\1/p' | head -n 1)"
+
+# Test mode came with 2.1.24. An older engine advances the save with
+# --benchmark instead: no player, so what needs one is skipped by its case,
+# and the run goes to the tick limit.
+ENGINE_FULL="$("$FACTORIO" --version 2>/dev/null | sed -nE 's/^Version: ([0-9]+\.[0-9]+\.[0-9]+).*/\1/p' | head -n 1)"
+has_test_mode() {
+  [ "$(printf '%s\n' "2.1.24" "${ENGINE_FULL:-0}" | sort -V | head -n 1)" = "2.1.24" ]
+}
 
 mod_version() { # <mod dir>
   sed -nE 's/.*"factorio_version": *"([^"]+)".*/\1/p' "$1/info.json"
@@ -108,6 +118,11 @@ launch() { # <set name> <set dir>; runs --create then test mode
   touch "$dir/bench.log"
   "$FACTORIO" --config "$cfg" --create "$save" --mod-directory "$dir/mods" --map-gen-seed 1 \
     > "$dir/create.log" 2>&1 || { echo "[$name] --create failed"; return 1; }
+  if ! has_test_mode; then
+    "$FACTORIO" --config "$cfg" --benchmark "$save" --benchmark-ticks "$TICKS" --mod-directory "$dir/mods" \
+      > "$dir/bench.log" 2>&1 || { echo "[$name] --benchmark failed"; return 1; }
+    return 0
+  fi
   local arg=()
   [ -n "${SEB_TEST_ARG:-}" ] && arg=(--test-arg "$SEB_TEST_ARG")
   "$FACTORIO" --config "$cfg" --test-save "$save" --test-ticks "$TICKS" "${arg[@]}" --mod-directory "$dir/mods" \
