@@ -63,6 +63,8 @@ end
 function check.done()
   local t = storage.tally or { pass = 0, fail = 0 }
   say(string.format("DONE pass=%d fail=%d", t.pass, t.fail))
+  -- Test mode (2.1.24+) ends the run at once, with exit 1 on a failure.
+  script.finish_test(t.fail == 0)
 end
 
 return check

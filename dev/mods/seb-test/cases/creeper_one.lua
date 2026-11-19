@@ -161,8 +161,15 @@ local function plain_plan_twin(surface)
   check.eq("creeper_one the twin copies share their chests", rig.count(surface, rig.box(o, 0, TWIN_Y, 10, TWIN_Y + 1),
     "iron-chest"), 4)
   local same = rig.call("get_project", c.same_project)
+  -- A connected player charts land, and a chunk charted under a blocked
+  -- socket sends it back to the frontier (retry.lua): the refusal is then
+  -- either standing or being tried again, never a second copy.
+  local retried = false
+  for _, entry in ipairs(same and same.history or {}) do retried = retried or entry.kind == "retried" end
+  local refused = same and (same.closed["stamp-short"] == 1 and same.state == "finished"
+    or retried and same.state == "growing")
   check.same("creeper_one a copy that would place nothing new is refused",
-    same and { same.state, same.count, same.closed["stamp-short"] }, { "finished", 1, 1 })
+    same and { same.count, refused and true or false }, { 1, true })
 end
 
 local function creeping(surface)

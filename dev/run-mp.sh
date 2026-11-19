@@ -6,6 +6,8 @@
 # refused as "mod event handlers are not identical", a desync or a script
 # error fails the run.
 #   usage: dev/run-mp.sh [join-after-seconds] [stay-seconds]
+# The server starts on --port 0 (2.1.25+: the game picks a free port, read from
+# the "Hosting game at" log line); SEB_MP_PORT=<n> forces a fixed port.
 set -uo pipefail
 FACTORIO="${FACTORIO:-$HOME/factorio-2.1/bin/x64/factorio}"
 DEV_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -13,7 +15,7 @@ REPO="$(cd "$DEV_DIR/.." && pwd)"
 RUN="$REPO/.run/mp"
 JOIN_AFTER="${1:-20}"
 STAY="${2:-30}"
-PORT=34297
+PORT="${SEB_MP_PORT:-0}"
 # shellcheck source=vdisplay.sh
 . "$DEV_DIR/vdisplay.sh"
 [ -d "$RUN" ] && vdisplay_stop "$RUN"
@@ -45,6 +47,15 @@ JSON
 "$FACTORIO" --config "$RUN/server/config.ini" --mod-directory "$RUN/mods" --start-server "$RUN/world.zip" \
   --port $PORT --server-settings "$RUN/server-settings.json" > "$RUN/server.log" 2>&1 &
 SERVER=$!
+if [ "$PORT" = 0 ]; then
+  for _ in $(seq 1 120); do
+    PORT="$(sed -nE 's/.*Hosting game at IP ADDR:\(\{[^}]*:([0-9]+)\}\).*/\1/p' "$RUN/server.log" 2>/dev/null | tail -n 1)"
+    [ -n "$PORT" ] && break
+    sleep 0.5
+  done
+  [ -n "$PORT" ] || { echo "server never reported a port"; kill $SERVER; exit 1; }
+fi
+echo "server port=$PORT"
 echo "server pid=$SERVER, client joins in ${JOIN_AFTER}s"
 timeout "$JOIN_AFTER" tail -f /dev/null
 vdisplay_start "$RUN" 1280x720 || { kill $SERVER; exit 1; }

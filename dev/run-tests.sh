@@ -5,13 +5,17 @@
 # isolated mod directory under .run/tests/<set>/mods holding symlinks to the
 # mod and to dev/mods/seb-test, creates a fresh save (seb-test's on_init lays
 # out the rig and runs the synchronous cases), then advances it with
-# --benchmark so robots build and the growth and retirement checks can run.
-# The benchmark phase loads the save, so it also exercises on_load.
+# --test-save (Factorio 2.1.24+ test mode) so robots build and the growth and retirement checks can run.
+# The test-mode phase loads the save, so it also exercises on_load, and it has
+# a connected player (index 1, admin, no character) so charting works. seb-test
+# calls script.finish_test(failures == 0) after SEB_TEST DONE, which ends the
+# run at once; running out of ticks exits 0, so the DONE marker is the proof.
 #
 #   usage: dev/run-tests.sh [base|space-age ...]     (no args = both sets)
 #
 #   SEB_MOD_SRC=<dir>   test another copy of the mod instead of the repo root
-#   SEB_TEST_TICKS=<n>  benchmark length (must pass seb-test's last check tick)
+#   SEB_TEST_TICKS=<n>  tick limit (must pass seb-test's last check tick)
+#   SEB_TEST_ARG=<s>    passed as --test-arg (script.test_arg in the test mod)
 #   SEB_RUN_DIR=<dir>   where runs live (default .run/tests), so parallel runs do not collide
 #   FACTORIO=<path>     the Factorio binary (default: the 2.1 install)
 #
@@ -97,15 +101,17 @@ engine_errors() { # <log files...>
   grep -h -v "SEB_TEST" "$@" | grep -E "Error|error while|stack traceback|Failed to load mods" || true
 }
 
-launch() { # <set name> <set dir>; runs --create then --benchmark
+launch() { # <set name> <set dir>; runs --create then test mode
   local name="$1" dir="$2"
   local save="$dir/test.zip" cfg="$dir/config.ini"
   rm -f "$save" "$dir/create.log" "$dir/bench.log" "$dir/results.txt"
   touch "$dir/bench.log"
   "$FACTORIO" --config "$cfg" --create "$save" --mod-directory "$dir/mods" --map-gen-seed 1 \
     > "$dir/create.log" 2>&1 || { echo "[$name] --create failed"; return 1; }
-  "$FACTORIO" --config "$cfg" --benchmark "$save" --benchmark-ticks "$TICKS" --mod-directory "$dir/mods" \
-    > "$dir/bench.log" 2>&1 || { echo "[$name] --benchmark failed"; return 1; }
+  local arg=()
+  [ -n "${SEB_TEST_ARG:-}" ] && arg=(--test-arg "$SEB_TEST_ARG")
+  "$FACTORIO" --config "$cfg" --test-save "$save" --test-ticks "$TICKS" "${arg[@]}" --mod-directory "$dir/mods" \
+    > "$dir/bench.log" 2>&1 || { echo "[$name] test run failed"; return 1; }
 }
 
 evaluate() { # <set name> <set dir> <launch status>; prints a summary

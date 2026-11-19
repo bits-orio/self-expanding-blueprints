@@ -3,7 +3,7 @@
 --   on_init      rig + synchronous contract cases
 --   START_TICK   growth scenarios start (each in its own region and network)
 --   CHECK_TICKS  scenarios verify; the last one prints SEB_TEST DONE
--- The --benchmark phase loads the save, so on_load re-registration of the
+-- The test-mode phase (--test-save) loads the save, so on_load re-registration of the
 -- mod's queue handler is exercised by every growth scenario.
 
 local check = require("lib.check")

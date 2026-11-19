@@ -1,5 +1,6 @@
 -- rules.lua: project rules and controls.
---   uncharted: charted_only is on by default (headless runs chart nothing)
+--   uncharted: charted_only is on by default; the test-mode player charts the
+--              rig's regions, so the site is far away, on land nothing charts
 --   area:      growth stays inside the given rectangle
 --   pause:     a paused project stamps nothing until resumed
 --   stop:      a stopped project never grows
@@ -10,6 +11,7 @@ local rig = require("lib.rig")
 local case = { name = "rules" }
 
 local REGION = 9
+local UNCHARTED_AT = { x = 40000.5, y = 6400.5 }   -- never generated or charted by anything else
 local E = defines.direction.east
 local CELL = { { name = "medium-electric-pole", position = { x = 0.5, y = 0.5 } }, { name = "small-lamp", position = { x = 1.5, y = 0.5 } } }
 
@@ -30,7 +32,7 @@ end
 
 function case.start(surface)
   local o, r = rig.region(REGION), storage.rules
-  r.uncharted = start({ position = rig.offset(o, 0, 0) })
+  r.uncharted = start({ position = UNCHARTED_AT })
   r.area = start({ area = rig.box(o, 0, 10, 9, 12), charted_only = false })
   r.paused = start({ position = rig.offset(o, 0, 20), directions = { E }, max_instances = 3, charted_only = false })
   rig.call("pause_project", r.paused)
