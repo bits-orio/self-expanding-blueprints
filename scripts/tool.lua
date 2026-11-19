@@ -186,10 +186,12 @@ local function retire(player, event)
   cursor.say(player, { "seb-message.retiring", count })
 end
 
+-- The player of a selection made with the area tool.
 local function player_of(event)
   if event.item ~= const.TOOL then return nil end
   return game.get_player(event.player_index)
 end
+tool.player_of = player_of
 
 -- The area tool's selection as a click or a drag. A drag started at the
 -- corner across from where it ended (the cursor then).
@@ -200,6 +202,7 @@ local function where_of(event)
   local centre, ended = geometry.box_center(box), event.cursor_position or { x = box.right, y = box.bottom }
   return { area = box, from_right = ended.x < centre.x, from_bottom = ended.y < centre.y }
 end
+tool.where_of = where_of
 
 function tool.on_selected(event)
   local player = player_of(event)

@@ -58,6 +58,8 @@ Each line is an action, then the expected result.
 - [x] Click on the map: a copy is stamped centred on the click and robots build it; its outline reads "Building: N left" until done.
 - [x] With "Stop after 12": growth stops at 12; the project row reads "Finished 12 built ... Count reached".
 - [x] Fill an area, then drag a rectangle from its bottom-right corner to its top-left: the first copy goes in the bottom-right corner and copies spread west and north, stopping at the edges. (2026-10-27)
+- [x] While dragging with the area tool: a green outline of the first copy sits in the corner the drag began at with "Up to N copies" under it, and both follow the pointer; a rectangle smaller than one copy turns it red ("Too small: a copy needs 7 × 6 tiles"); releasing the button or pressing Q mid-drag takes both away. (2026-11-18, GUI client at 1920x1080 on 2.1.25)
+- [ ] The same with a second player watching: only the dragging player sees the outline, and no desync.
 - [x] Show on map from the window in the character's view: the view moves to the map and the window stays open. (2026-10-27)
 - [x] Rename a design from its page (type, Enter): the page, the list and its projects' rows show the new name; chat says "Renamed A to B". (2026-10-27)
 - [ ] After a rename, a design whose socket names the old name still attaches the renamed design; a new blueprint with the old name makes a new design.

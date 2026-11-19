@@ -71,6 +71,7 @@ local CASES = {
   require("cases.dry_drills"),
   require("cases.stop_remove"),
   require("cases.records"),
+  require("cases.fill_preview"),
 }
 
 local START_TICK = 60

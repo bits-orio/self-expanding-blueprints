@@ -37,6 +37,9 @@ data:extend({
     flags = { "not-stackable", "only-in-cursor", "spawnable" },
     hidden = true,
     draw_label_for_cursor_render = true,
+    -- A drag in flight is told to the mod, which shows what releasing it
+    -- would grow (scripts/fill_preview.lua).
+    send_pre_selection_events = true,
     subgroup = "tool",
     order = "z[self-expanding-blueprints]-a[grow-tool]",
     select = mode({ r = 0.30, g = 0.75, b = 0.35 }, "copy"),

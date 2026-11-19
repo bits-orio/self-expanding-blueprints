@@ -22,6 +22,7 @@ local migrations = require("scripts.migrations")
 local window = require("scripts.gui.window")
 local actions = require("scripts.gui.actions")
 local tool = require("scripts.tool")
+local fill_preview = require("scripts.fill_preview")
 local markers = require("scripts.markers")
 local marker_tools = require("scripts.marker_tools")
 local labs = require("scripts.core.labs")
@@ -122,12 +123,19 @@ local function redraw_outlines(event)
 end
 
 -- The area tool and the marker tools: each acts only on selections made with it.
+-- A drag in flight only draws (fill_preview.lua); what it drew goes as the
+-- drag ends, whichever way.
+script.on_event({ defines.events.on_player_start_selected_area, defines.events.on_player_change_selected_area },
+  fill_preview.on_changed)
+script.on_event(defines.events.on_player_cancel_selected_area, fill_preview.on_ended)
 local function on_selected(event)
+  fill_preview.on_ended(event)
   tool.on_selected(event)
   marker_tools.on_selected(event)
   redraw_outlines(event)
 end
 local function on_reverse_selected(event)
+  fill_preview.on_ended(event)
   tool.on_reverse_selected(event)
   marker_tools.on_reverse_selected(event)
   redraw_outlines(event)
@@ -136,6 +144,7 @@ script.on_event(defines.events.on_player_selected_area, on_selected)
 script.on_event(defines.events.on_player_alt_selected_area, on_selected)
 script.on_event(defines.events.on_player_reverse_selected_area, on_reverse_selected)
 script.on_event(defines.events.on_player_alt_reverse_selected_area, function(event)
+  fill_preview.on_ended(event)
   tool.on_alt_reverse_selected(event)
   marker_tools.on_reverse_selected(event)
   redraw_outlines(event)
@@ -189,7 +198,10 @@ script.on_event(defines.events.on_player_cursor_stack_changed, function(event)
   if not player then return end
   window.cursor_changed(player)
   outlines.cursor_changed(player)
+  -- The area tool left the hand mid-drag.
+  fill_preview.clear(player)
 end)
+script.on_event({ defines.events.on_player_changed_surface, defines.events.on_player_left_game }, fill_preview.on_ended)
 
 -- World lifecycle
 script.on_event({ defines.events.on_surface_deleted, defines.events.on_surface_cleared }, function(event)
@@ -205,6 +217,7 @@ script.on_event(defines.events.on_player_changed_force, function(event)
   if not player then return end
   window.close(player)
   tool.forget(player)
+  fill_preview.clear(player)
 end)
 script.on_event(defines.events.on_force_created, labs.on_force_created)
 -- A window stays open across a disconnect, and rows only redraw for players
@@ -228,5 +241,6 @@ script.on_event(defines.events.on_resource_depleted, function(event)
 end)
 script.on_event(defines.events.on_research_finished, research.on_research_finished)
 script.on_event(defines.events.on_player_removed, function(event)
+  fill_preview.on_ended(event)
   registry.drop_player(event.player_index)
 end)
