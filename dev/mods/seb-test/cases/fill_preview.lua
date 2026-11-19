@@ -5,8 +5,8 @@
 --   plan:  the preview puts the first copy where a real fill puts it and
 --          counts the copies a real fill plans, from either corner
 --   drag:  green with the count, red with the size to drag when no copy
---          fits; drawn once and moved; nothing for a right-drag; gone when
---          the drag ends
+--          fits; drawn once and moved; drawn for the dragging player alone;
+--          nothing for a right-drag; gone when the drag ends
 
 local check = require("lib.check")
 local rig = require("lib.rig")
@@ -68,6 +68,9 @@ local function dragged(surface)
   check.same("fill_preview a drag too small is red and says the size", moved and { moved.green, moved.text[1], moved.text[2], moved.text[3] },
     { false, "seb-overlay.fill-too-small", "6", "3" })
   check.eq("fill_preview the outline is moved, not drawn again", moved and moved.box_id, shown and shown.box_id)
+  -- Render objects without a players list are drawn for everyone.
+  check.same("fill_preview only the dragging player sees the outline and the text",
+    moved and { moved.box_players, moved.text_players }, { { 1 }, { 1 } })
   check.eq("fill_preview a right-drag shows nothing", drag(surface, rig.box(o, 0, 0, 20, 10), defines.selection_mode.reverse_select), nil)
   check.truthy("fill_preview a drag shows again", drag(surface, rig.box(o, 0, 0, 20, 10)))
   check.eq("fill_preview the end of the drag clears it", seam("end_drag", 1), nil)

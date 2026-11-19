@@ -36,8 +36,8 @@ local undo = require("scripts.undo")
 local undo_mark = require("scripts.core.undo_mark")
 local records = require("scripts.core.records")
 require("scripts.remote.interface")
--- The test mod reaches what no remote caller should (test_seam.lua).
-if script.active_mods["seb-test"] then require("scripts.remote.test_seam") end
+-- The dev-only test mods reach what no remote caller should (test_seam.lua).
+if script.active_mods["seb-test"] or script.active_mods["seb-drag-world"] then require("scripts.remote.test_seam") end
 
 projects.hooks.changed = window.refresh_project
 overlay.hooks.preview = growth.preview

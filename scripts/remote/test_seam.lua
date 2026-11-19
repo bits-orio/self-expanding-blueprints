@@ -1,16 +1,17 @@
--- A second remote interface, added only while the dev-only test mod
--- seb-test is active (control.lua): what the tests must reach inside the
--- mod because no script can make it happen. A record of the blueprint
--- library cannot be created from Lua and a drag of the area tool needs a
--- hand on the mouse, so the handlers are called here with stand-ins built
--- from plain data (functions do not cross remote.call). Never part of the
--- public interface.
+-- A second remote interface, added only while a dev-only mod that names
+-- itself in control.lua is active (seb-test, or the drag world of
+-- dev/mp-drag.sh): what the tests must reach inside the mod because no
+-- script can make it happen. A record of the blueprint library cannot be
+-- created from Lua and a drag of the area tool needs a hand on the mouse, so
+-- the handlers are called here with stand-ins built from plain data
+-- (functions do not cross remote.call). Never part of the public interface.
 
 local const = require("scripts.const")
 local library = require("scripts.core.library")
 local records = require("scripts.core.records")
 local registry = require("scripts.core.registry")
 local fill_preview = require("scripts.fill_preview")
+local tool = require("scripts.tool")
 
 -- A stand-in for a blueprint record: facts = {export, label, shelf_index,
 -- record_id, preview, old_engine}. With old_engine it has no shelf or id and
@@ -33,6 +34,13 @@ local function id_of(design, why)
   return design and design.id, why
 end
 
+-- The players a render object is drawn for, as indexes; empty means everyone.
+local function seen_by(object)
+  local indexes = {}
+  for _, player in pairs(object.players or {}) do indexes[#indexes + 1] = player.index end
+  return indexes
+end
+
 -- What the player's fill preview shows, as plain data; nil when nothing.
 local function shown(player_index)
   local preview = registry.player(player_index).fill_preview
@@ -41,6 +49,7 @@ local function shown(player_index)
   return {
     left = a.x, top = a.y, right = b.x, bottom = b.y, text = preview.text.text,
     green = preview.box.color.g > preview.box.color.r, box_id = preview.box.id,
+    box_players = seen_by(preview.box), text_players = seen_by(preview.text),
   }
 end
 
@@ -78,5 +87,14 @@ remote.add_interface(const.MOD .. "-test", {
   end_drag = function(player_index)
     fill_preview.on_ended({ player_index = player_index })
     return shown(player_index)
+  end,
+  -- What a real drag shows right now (dev/mp-drag.sh reads it every tick).
+  preview = shown,
+  -- The area tool for `design_id` in the player's hand, as the window's
+  -- Fill an area button gives it.
+  hold_area_tool = function(player_index, design_id)
+    local player = game.get_player(player_index)
+    registry.player(player_index).selected_design = design_id
+    return tool.give_area(player)
   end,
 })

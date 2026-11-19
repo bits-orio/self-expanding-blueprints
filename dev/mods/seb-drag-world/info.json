@@ -1,0 +1,9 @@
+{
+  "name": "seb-drag-world",
+  "version": "0.0.1",
+  "title": "Self-Expanding Blueprints drag world",
+  "author": "bits-orio",
+  "factorio_version": "2.1",
+  "description": "Dev-only: a server world whose players hold the area tool, and a tick-by-tick log of what its drag preview shows (dev/mp-drag.sh). Never shipped.",
+  "dependencies": ["base >= 2.1", "self-expanding-blueprints"]
+}
