@@ -1,161 +1,99 @@
 #!/usr/bin/env bash
-# Headless test runner for Self-Expanding Blueprints.
+# Headless test suite; settings in dev/harness.conf. The PRE_TESTS commands
+# run first. Then, for each mod set, this mod, its DEPS and the test mod (if
+# the repo has one) are staged in a private mod folder and a fresh save is
+# created (on_init runs, no player yet). The save is then run in the game's
+# test mode (--test-save, Factorio 2.1.24 and newer): on_load runs, a
+# connected player is created (index 1, admin, so charting works), and the
+# game ticks until the test mod calls script.finish_test(passed) or TICKS
+# ticks have passed. Older engines run --benchmark for TICKS ticks instead,
+# without a player.
 #
-# For each mod set (base only, then base + quality + space-age) it builds an
-# isolated mod directory under .run/tests/<set>/mods holding symlinks to the
-# mod and to dev/mods/seb-test, creates a fresh save (seb-test's on_init lays
-# out the rig and runs the synchronous cases), then advances it with
-# --test-save (Factorio 2.1.24+ test mode) so robots build and the growth and retirement checks can run.
-# The test-mode phase loads the save, so it also exercises on_load, and it has
-# a connected player (index 1, admin, no character) so charting works. seb-test
-# calls script.finish_test(failures == 0) after SEB_TEST DONE, which ends the
-# run at once; running out of ticks exits 0, so the DONE marker is the proof.
-# An engine before 2.1.24 has no test mode: the save is advanced with
-# --benchmark there (no player, the whole tick limit).
+# A test mod logs "<ABBR>_TEST PASS <name>", "<ABBR>_TEST FAIL <name>: <why>"
+# and, after its last check, "<ABBR>_TEST DONE"; it should then call
+# script.finish_test(failures == 0) so the run ends at once. The call does
+# nothing outside test mode, but before 2.1.24 reading script.finish_test or
+# script.test_arg throws: a test mod that also runs there wraps them in pcall.
+# script.test_arg holds HARNESS_ARG.
 #
-#   usage: dev/run-tests.sh [base|space-age ...]     (no args = both sets)
-#
-#   SEB_MOD_SRC=<dir>   test another copy of the mod instead of the repo root
-#   SEB_TEST_TICKS=<n>  tick limit (must pass seb-test's last check tick)
-#   SEB_TEST_ARG=<s>    passed as --test-arg (script.test_arg in the test mod)
-#   SEB_RUN_DIR=<dir>   where runs live (default .run/tests), so parallel runs do not collide
-#   FACTORIO=<path>     the Factorio binary (default: the 2.1 install)
-#
-# Factorio refuses a mod whose info.json names another major.minor than its
-# own. When the binary's differs from info.json's factorio_version, the run
-# dir gets COPIES of the mod and seb-test with factorio_version patched to the
-# binary's, instead of symlinks; the repo's info.json is never touched.
-#
-# Exit status is non-zero on any SEB_TEST FAIL, any Lua/engine error in the
-# logs, a failed Factorio run, or a missing SEB_TEST DONE marker.
+# Exit status is non-zero on a failed PRE_TESTS command, a failed Factorio
+# run (finish_test(false) and an uncaught Lua error both exit 1), any engine
+# or Lua error in the logs, any <ABBR>_TEST FAIL line, or a test mod that
+# never printed <ABBR>_TEST DONE. Running out of ticks exits 0 in test mode,
+# so the DONE line is what proves a suite finished.
+#   usage: dev/run-tests.sh [base|space-age ...]   (default: SETS in harness.conf)
+#   HARNESS_TICKS=<n>  tick limit (default: TICKS in harness.conf)
+#   HARNESS_ARG=<str>  passed as --test-arg; a test mod reads script.test_arg
+#   HARNESS_RUN=<dir>  where runs live (default .run/tests), so parallel runs do not collide
+#   FACTORIO=<path>    the binary (default: the install matching info.json's factorio_version)
 set -uo pipefail
+# shellcheck source=harness-lib.sh
+. "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/harness-lib.sh"
+RUN_DIR="${HARNESS_RUN:-$REPO/.run/tests}"
+TICKS="${HARNESS_TICKS:-$TICKS}"
+WANT=("$@"); [ ${#WANT[@]} -eq 0 ] && WANT=("${SETS[@]}")
+TAG="${ABBR}_TEST"
 
-FACTORIO="${FACTORIO:-$HOME/factorio-2.1/bin/x64/factorio}"
-DEV_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-REPO="$(cd "$DEV_DIR/.." && pwd)"
-MOD_SRC="${SEB_MOD_SRC:-$REPO}"
-TEST_MOD="$DEV_DIR/mods/seb-test"
-RUN_DIR="${SEB_RUN_DIR:-$REPO/.run/tests}"
-TICKS="${SEB_TEST_TICKS:-12100}"
-
-SETS=("$@")
-if [ ${#SETS[@]} -eq 0 ]; then SETS=(base space-age); fi
-
-# "2.1" from "Version: 2.1.23 (build ...)".
-ENGINE_VERSION="$("$FACTORIO" --version 2>/dev/null | sed -nE 's/^Version: ([0-9]+\.[0-9]+)\..*/\1/p' | head -n 1)"
-
-# Test mode came with 2.1.24. An older engine advances the save with
-# --benchmark instead: no player, so what needs one is skipped by its case,
-# and the run goes to the tick limit.
-ENGINE_FULL="$("$FACTORIO" --version 2>/dev/null | sed -nE 's/^Version: ([0-9]+\.[0-9]+\.[0-9]+).*/\1/p' | head -n 1)"
-has_test_mode() {
-  [ "$(printf '%s\n' "2.1.24" "${ENGINE_FULL:-0}" | sort -V | head -n 1)" = "2.1.24" ]
+run_pre_tests() {
+  local cmd status=0
+  for cmd in "${PRE_TESTS[@]}"; do
+    if (cd "$REPO" && bash -c "$cmd") > "$RUN_DIR/pre.log" 2>&1; then
+      echo "[pre] ok: $cmd"
+    else
+      echo "[pre] FAILED: $cmd"; tail -n 20 "$RUN_DIR/pre.log" | sed "s/^/  [pre] /"; status=1
+    fi
+  done
+  return $status
 }
 
-mod_version() { # <mod dir>
-  sed -nE 's/.*"factorio_version": *"([^"]+)".*/\1/p' "$1/info.json"
-}
-
-# A symlink when the mod already targets this engine, else a patched copy
-# (without the repo's run dir, git data and never-shipped folders).
-stage_mod() { # <source dir> <destination>
-  if [ -z "$ENGINE_VERSION" ] || [ "$(mod_version "$1")" = "$ENGINE_VERSION" ]; then
-    ln -s "$1" "$2"
-    return
-  fi
-  mkdir -p "$2"
-  rsync -a --exclude .git --exclude .run --exclude dev --exclude docs --exclude tools --exclude reference "$1/" "$2/"
-  sed -i -E "s/(\"factorio_version\": *\")[^\"]+\"/\1$ENGINE_VERSION\"/" "$2/info.json"
-}
-
-write_mod_list() { # <mods dir> <dlc enabled: true|false>
-  cat > "$1/mod-list.json" <<EOF
-{
-  "mods": [
-    { "name": "base", "enabled": true },
-    { "name": "elevated-rails", "enabled": $2 },
-    { "name": "quality", "enabled": $2 },
-    { "name": "space-age", "enabled": $2 },
-    { "name": "self-expanding-blueprints", "enabled": true },
-    { "name": "seb-test", "enabled": true }
-  ]
-}
-EOF
-}
-
-# A private write-data directory keeps these runs off the player's own
-# Factorio lock file, config and logs, so tests can run while the game is open.
-write_config() { # <set dir>
-  mkdir -p "$1/userdata"
-  cat > "$1/config.ini" <<EOF
-[path]
-read-data=__PATH__executable__/../../data
-write-data=$1/userdata
-EOF
-}
-
-prepare_set() { # <set name> <set dir>
-  local dlc=false
-  [ "$1" = "space-age" ] && dlc=true
-  rm -rf "$2/mods"
-  mkdir -p "$2/mods"
-  stage_mod "$MOD_SRC" "$2/mods/self-expanding-blueprints"
-  stage_mod "$TEST_MOD" "$2/mods/seb-test"
-  write_mod_list "$2/mods" "$dlc"
-  write_config "$2"
-}
-
-# Engine and script errors, but not our own SEB_TEST lines (a FAIL detail may
-# legitimately contain the word "error").
-engine_errors() { # <log files...>
-  grep -h -v "SEB_TEST" "$@" | grep -E "Error|error while|stack traceback|Failed to load mods" || true
-}
-
-launch() { # <set name> <set dir>; runs --create then test mode
-  local name="$1" dir="$2"
-  local save="$dir/test.zip" cfg="$dir/config.ini"
-  rm -f "$save" "$dir/create.log" "$dir/bench.log" "$dir/results.txt"
+launch() { # <set name> <set dir>; runs --create, then the save in test mode
+  local name="$1" dir="$2" save="$2/test.zip" cfg="$2/config.ini" run
+  rm -f "$save" "$dir/create.log" "$dir/bench.log"
   touch "$dir/bench.log"
   "$FACTORIO" --config "$cfg" --create "$save" --mod-directory "$dir/mods" --map-gen-seed 1 \
     > "$dir/create.log" 2>&1 || { echo "[$name] --create failed"; return 1; }
-  if ! has_test_mode; then
-    "$FACTORIO" --config "$cfg" --benchmark "$save" --benchmark-ticks "$TICKS" --mod-directory "$dir/mods" \
-      > "$dir/bench.log" 2>&1 || { echo "[$name] --benchmark failed"; return 1; }
-    return 0
+  if harness_engine_at_least 2.1.24; then
+    run=(--test-save "$save" --test-ticks "$TICKS")
+    [ -n "${HARNESS_ARG:-}" ] && run+=(--test-arg "$HARNESS_ARG")
+  else
+    run=(--benchmark "$save" --benchmark-ticks "$TICKS")
   fi
-  local arg=()
-  [ -n "${SEB_TEST_ARG:-}" ] && arg=(--test-arg "$SEB_TEST_ARG")
-  "$FACTORIO" --config "$cfg" --test-save "$save" --test-ticks "$TICKS" "${arg[@]}" --mod-directory "$dir/mods" \
-    > "$dir/bench.log" 2>&1 || { echo "[$name] test run failed"; return 1; }
+  "$FACTORIO" --config "$cfg" "${run[@]}" --mod-directory "$dir/mods" \
+    > "$dir/bench.log" 2>&1 || { echo "[$name] ${run[0]} failed"; return 1; }
 }
 
 evaluate() { # <set name> <set dir> <launch status>; prints a summary
-  local name="$1" dir="$2" status="$3"
-  local logs=("$dir/create.log" "$dir/bench.log")
-  grep -h "SEB_TEST" "${logs[@]}" | sed -E 's/^.*SEB_TEST /SEB_TEST /' > "$dir/results.txt"
-  local pass fail errors
-  pass=$(grep -c "^SEB_TEST PASS" "$dir/results.txt")
-  fail=$(grep -c "^SEB_TEST FAIL" "$dir/results.txt")
-  errors=$(engine_errors "${logs[@]}")
-  echo "[$name] pass=$pass fail=$fail   (logs: $dir)"
-  grep "^SEB_TEST FAIL" "$dir/results.txt" | sed "s/^/  [$name] /"
-  if [ "$fail" -gt 0 ]; then status=1; fi
-  if [ -n "$errors" ]; then echo "$errors" | head -20 | sed "s/^/  [$name] ERROR: /"; status=1; fi
-  if ! grep -q "^SEB_TEST DONE" "$dir/results.txt"; then echo "  [$name] missing SEB_TEST DONE"; status=1; fi
+  local name="$1" dir="$2" status="$3" logs=("$2/create.log" "$2/bench.log") pass=0 fail=0 errors
+  if [ -n "$TEST_MOD" ]; then
+    grep -h "$TAG " "${logs[@]}" | sed -E "s/^.*$TAG /$TAG /" > "$dir/results.txt"
+    pass=$(grep -c "^$TAG PASS" "$dir/results.txt")
+    fail=$(grep -c "^$TAG FAIL" "$dir/results.txt")
+    grep "^$TAG FAIL" "$dir/results.txt" | sed "s/^/  [$name] /"
+    [ "$fail" -gt 0 ] && status=1
+    grep -q "^$TAG DONE" "$dir/results.txt" || { echo "  [$name] missing $TAG DONE"; status=1; }
+  fi
+  errors=$(harness_errors "${logs[@]}")
+  [ -n "$errors" ] && { echo "$errors" | head -20 | sed "s/^/  [$name] ERROR: /"; status=1; }
+  if [ -n "$TEST_MOD" ]; then echo "[$name] pass=$pass fail=$fail   (logs: $dir)"
+  else echo "[$name] loaded, ran up to $TICKS ticks: $([ "$status" -eq 0 ] && echo ok || echo FAILED)   (logs: $dir)"; fi
   if [ "$status" -ne 0 ] && [ "$fail" -eq 0 ]; then tail -n 15 "${logs[@]}" | sed "s/^/  [$name] /"; fi
   return "$status"
 }
 
 run_set() { # <set name>
   local dir="$RUN_DIR/$1" status=0
-  prepare_set "$1" "$dir"
+  mkdir -p "$dir"
+  harness_config "$dir"
+  harness_stage "$dir" "$1" ${TEST_MOD:+"$DEV_DIR/mods/$TEST_MOD"} || return 1
   launch "$1" "$dir" || status=1
   evaluate "$1" "$dir" "$status"
 }
 
+mkdir -p "$RUN_DIR"
 overall=0
+run_pre_tests || overall=1
 echo "Factorio $ENGINE_VERSION: $FACTORIO"
-for set in "${SETS[@]}"; do
+for set in "${WANT[@]}"; do
   case "$set" in
     base|space-age) run_set "$set" || overall=1 ;;
     *) echo "unknown set: $set (expected base or space-age)"; overall=1 ;;

@@ -69,9 +69,9 @@ case "$cmd" in
            [ -f "$RUN/confirmed-$PID" ] && break
            touch "$RUN/confirmed-$PID"
          done ;;
-  snap)  OUT_FILE="$RUN/userdata/script-output/seb-snap.png"; rm -f "$OUT_FILE"
+  snap)  OUT_FILE="$RUN/userdata/script-output/harness-snap.png"; rm -f "$OUT_FILE"
          ZOOM="${6:-1}"; WPX=$(python3 -c "print(round($3*32*$ZOOM))"); HPX=$(python3 -c "print(round($4*32*$ZOOM))")
-         "$0" lua "game.take_screenshot{player=game.player, position={$1,$2}, resolution={$WPX,$HPX}, zoom=$ZOOM, path='seb-snap.png', daytime=0, hide_clouds=true, hide_fog=true, force_render=true}"
+         "$0" lua "game.take_screenshot{player=game.player, position={$1,$2}, resolution={$WPX,$HPX}, zoom=$ZOOM, path='harness-snap.png', daytime=0, hide_clouds=true, hide_fog=true, force_render=true}"
          for _ in $(seq 1 30); do [ -s "$OUT_FILE" ] && break; sleep 0.2; done
          [ -s "$OUT_FILE" ] || { echo "no screenshot written"; exit 1; }
          sleep 0.3; cp "$OUT_FILE" "$5" ;;

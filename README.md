@@ -113,6 +113,8 @@ dev/run-mp.sh               # a client joins a headless server mid-growth (handl
 python3 tools/check_locale.py
 ```
 
+`run-tests.sh`, `run-gui.sh`, `gui-drive.sh`, `run-mp.sh`, `harness-lib.sh` and `vdisplay.sh` are a test harness shared with the author's other Factorio mods, copied here unchanged; what is this mod's own is in `dev/harness.conf`. `GUI_SIZE=1920x1080` sets the client's window, `SEB_WORLD=<dev mod>` its world, and `FACTORIO=<binary>` runs any of them on another engine.
+
 The graphical clients run on a private X display, so they never take over your mouse or screen (needs `sudo apt install xvfb x11vnc novnc`, plus `xdotool xclip imagemagick` to drive it with `dev/gui-drive.sh`). `dev/gui-drive.sh watch` shows the client in a browser tab; `FACTORIO_DISPLAY=desktop` puts it on your screen instead.
 
 Developed with AI coding assistants alongside human review and in-game testing.
