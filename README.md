@@ -110,6 +110,8 @@ dev/run-tests.sh            # headless suite, base and Space Age (a couple of mi
 dev/run-spike.sh <name>     # run one engine spike from dev/spikes/
 dev/run-gui.sh              # a real client on a lab world; drive it with dev/gui-drive.sh
 dev/run-mp.sh               # a client joins a headless server mid-growth (handler mismatch, desync)
+dev/mp-drag.sh [ticks]      # a client drags the area tool on a server, over a slow network if asked
+dev/library-check.sh        # a client stores, adds, renames and updates a blueprint library entry
 python3 tools/check_locale.py
 ```
 
