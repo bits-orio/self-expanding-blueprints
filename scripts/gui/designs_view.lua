@@ -10,6 +10,7 @@ local library = require("scripts.core.library")
 local projects = require("scripts.core.projects")
 local twins = require("scripts.core.twins")
 local books = require("scripts.core.books")
+local records = require("scripts.core.records")
 local registry = require("scripts.core.registry")
 local cursor = require("scripts.cursor")
 local design_text = require("scripts.gui.design_text")
@@ -45,6 +46,9 @@ local function offer(player)
   local tooltip = { "seb-gui.add-tooltip" }
   if not books.is_single_blueprint(source) then return book_offer(source, tooltip) end
   if not source.is_blueprint_setup() then return { caption = { "seb-gui.add-empty" }, tooltip = tooltip } end
+  -- A library entry a design came from is that design's next version.
+  local known = records.design_for(player.force.index, source)
+  if known then return { caption = { "seb-gui.add-update", known.name }, tooltip = tooltip, enabled = true } end
   local label = source.label
   if not label or label == "" then return { caption = { "seb-gui.add-unnamed" }, tooltip = tooltip, enabled = true } end
   if library.find(player.force.index, label, true) then

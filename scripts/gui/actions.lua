@@ -5,6 +5,7 @@ local registry = require("scripts.core.registry")
 local library = require("scripts.core.library")
 local pools = require("scripts.core.pools")
 local books = require("scripts.core.books")
+local records = require("scripts.core.records")
 local budget = require("scripts.core.budget")
 local projects = require("scripts.core.projects")
 local window = require("scripts.gui.window")
@@ -34,16 +35,17 @@ local LOCATE_OUTLINE_TICKS = 600
 local actions = {}
 
 -- One blueprint registers at once, as the next version when `name` is
--- taken, while the team's share of server time lasts (budget.lua); a book
--- goes through book_queue.lua. Returns the design, or nil once the player
--- is told why not.
+-- taken or the library entry held is one a design came from (records.lua),
+-- while the team's share of server time lasts (budget.lua); a book goes
+-- through book_queue.lua. Returns the design, or nil once the player is
+-- told why not.
 local function register(player, source, name)
   local force_index = player.force.index
   if not budget.ready(force_index) then return cursor.say(player, { "seb-reason.busy" }) end
   if library.oversized(force_index, source) then
     return cursor.say(player, design_text.error(const.REASON.design_too_big, force_index))
   end
-  local design, reason = library.register_string(force_index, books.export_of(source), name)
+  local design, reason = records.register(force_index, source, name)
   if not design then return cursor.say(player, design_text.error(reason, force_index)) end
   player.print({ "seb-message.registered", design.name, design.version })
   return design

@@ -13,6 +13,10 @@ _Avoid_: template, plan, pattern
 **Library**:
 A force's designs, held as blueprint stacks in a script inventory (`storage.libraries[force_index]`). Each MTS team has its own.
 
+**Library entry**:
+A record of Factorio's own blueprint library (a player's shelf or the game's) that a design was registered from, known by `shelf_index:record_id` (`scripts/core/records.lua`). Held again it is that design's next version; edited and closed, it tells the player the design is behind.
+_Avoid_: record (the engine's word for any library slot), source
+
 **Stamping copy**:
 The blueprint the mod actually builds: the player's blueprint with snapping cleared and one anchor added. Derived from the registered blueprint at every registration (ADR-0002).
 

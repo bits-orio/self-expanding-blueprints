@@ -70,6 +70,7 @@ local CASES = {
   require("cases.shelves"),
   require("cases.dry_drills"),
   require("cases.stop_remove"),
+  require("cases.records"),
 }
 
 local START_TICK = 60

@@ -4,6 +4,7 @@
 
 local library = require("scripts.core.library")
 local books = require("scripts.core.books")
+local records = require("scripts.core.records")
 local research = require("scripts.core.research")
 local args = require("scripts.remote.args")
 local lookup = require("scripts.remote.lookup")
@@ -45,8 +46,11 @@ end
 local function register_object(force_index, source, name)
   if source.object_name == "LuaItemStack" and not source.valid_for_read then return nil, "invalid-design" end
   if books.is_single_blueprint(source) then
-    local design, created_or_reason = library.register_string(force_index, books.export_of(source), name)
+    local text = books.export_of(source)
+    local design, created_or_reason = library.register_string(force_index, text, name)
     if not design then return nil, created_or_reason end
+    -- A library record's design remembers its entry (records.lua).
+    records.link(design, source, text)
     return design.id, created_or_reason
   end
   local designs, reason, pool = books.register_all(force_index, source)

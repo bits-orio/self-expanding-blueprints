@@ -33,7 +33,10 @@ local outlines = require("scripts.gui.outlines")
 local retry = require("scripts.core.retry")
 local undo = require("scripts.undo")
 local undo_mark = require("scripts.core.undo_mark")
+local records = require("scripts.core.records")
 require("scripts.remote.interface")
+-- The test mod reaches what no remote caller should (test_seam.lua).
+if script.active_mods["seb-test"] then require("scripts.remote.test_seam") end
 
 projects.hooks.changed = window.refresh_project
 overlay.hooks.preview = growth.preview
@@ -157,6 +160,8 @@ script.on_event(defines.events.on_gui_closed, function(event)
   local element = event.element
   local is_builder = element and element.valid and element.name == builder_view.NAME
   actions.on_closed(event)
+  -- A blueprint opened from the library, closed again (records.lua).
+  records.on_closed(event)
   local player = game.get_player(event.player_index)
   if player and is_builder then builder_view.close(player) end
 end)
