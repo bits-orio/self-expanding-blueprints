@@ -1,0 +1,1 @@
+{ "name": "sa-probe", "version": "1.0.0", "title": "SEB spike: LuaEntity.get_signals_changed", "author": "seb", "factorio_version": "2.1", "dependencies": ["base"] }

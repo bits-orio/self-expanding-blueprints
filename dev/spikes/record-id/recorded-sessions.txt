@@ -1,0 +1,169 @@
+# Blueprint library probe, 2026-11-18. Lines of the probe mod, shortened: timestamps and source
+# positions are removed, a record shows only the fields that hold a value, and within a section
+# a record line that already appeared (same slot, same values) is not printed again.
+# A block is the two shelves after the step named in its first line: G is the game shelf,
+# P1 is player 1's shelf, n is the number of records. FINDINGS.md lists the steps.
+
+## Client session, Factorio 2.1.25 (build 88022)
+RP on_gui_opened tick=2143 p=1 fields: gui_type=9
+RP    opened=nil opened_gui_type=9
+RP on_gui_closed tick=3094 p=1 fields: gui_type=9
+RP    opened=nil opened_gui_type=0
+RP on_gui_opened tick=3430 p=1 fields: gui_type=9
+RP    opened=nil opened_gui_type=9
+RP after4 game.blueprints n=0
+RP after4 player 1 blueprints n=4
+RP   P1[1] type=blueprint name=blueprint shelf_index=1 record_id=0 valid_for_write=false label=BP-B setup=true nent=1
+RP   P1[2] type=blueprint name=blueprint shelf_index=1 record_id=1 valid_for_write=false label=BP-A setup=true nent=1
+RP   P1[3] type=blueprint name=blueprint shelf_index=1 record_id=2 valid_for_write=false label=BP-C setup=true nent=1
+RP   P1[4] type=blueprint-book name=blueprint-book shelf_index=1 record_id=3 valid_for_write=false label=BOOK-1
+RP   cursor_record=nil
+RP clickA game.blueprints n=0
+RP clickA player 1 blueprints n=4
+RP   cursor_record=type=blueprint name=blueprint shelf_index=1 record_id=1 valid_for_write=false label=BP-A setup=true nent=1
+RP on_gui_opened tick=7901 p=1 fields: gui_type=9 ; record={type=blueprint name=blueprint shelf_index=1 record_id=0 valid_for_write=false label=BP-B setup=true nent=1}
+RP    opened=LuaRecord opened_gui_type=9 [type=blueprint name=blueprint shelf_index=1 record_id=0 valid_for_write=false label=BP-B setup=true nent=1]
+RP on_gui_closed tick=8456 p=1 fields: gui_type=9 ; record={type=blueprint name=blueprint shelf_index=1 record_id=0 valid_for_write=false label=BP-B setup=true nent=1}
+RP    opened=nil opened_gui_type=9
+RP moveB game.blueprints n=0
+RP moveB player 1 blueprints n=4
+RP   P1[1] type=blueprint name=blueprint shelf_index=1 record_id=1 valid_for_write=false label=BP-A setup=true nent=1
+RP   P1[2] type=blueprint name=blueprint shelf_index=1 record_id=2 valid_for_write=false label=BP-C setup=true nent=1
+RP   P1[3] type=blueprint-book name=blueprint-book shelf_index=1 record_id=3 valid_for_write=false label=BOOK-1
+RP   P1[4] type=blueprint name=blueprint shelf_index=1 record_id=0 valid_for_write=false label=BP-B setup=true nent=1
+RP on_gui_opened tick=10326 p=1 fields: gui_type=9 ; record={type=blueprint name=blueprint shelf_index=1 record_id=1 valid_for_write=false label=BP-A setup=true nent=1}
+RP    opened=LuaRecord opened_gui_type=9 [type=blueprint name=blueprint shelf_index=1 record_id=1 valid_for_write=false label=BP-A setup=true nent=1]
+RP on_gui_closed tick=13870 p=1 fields: gui_type=9 ; record={type=blueprint name=blueprint shelf_index=1 record_id=1 valid_for_write=false label=BP-A2 setup=true nent=1}
+RP    opened=nil opened_gui_type=9
+RP renameA game.blueprints n=0
+RP renameA player 1 blueprints n=4
+RP   P1[1] type=blueprint name=blueprint shelf_index=1 record_id=1 valid_for_write=false label=BP-A2 setup=true nent=1
+RP on_gui_opened tick=14790 p=1 fields: gui_type=9 ; record={type=blueprint-book name=blueprint-book shelf_index=1 record_id=3 valid_for_write=false label=BOOK-1}
+RP    opened=LuaRecord opened_gui_type=9 [type=blueprint-book name=blueprint-book shelf_index=1 record_id=3 valid_for_write=false label=BOOK-1]
+RP BOOKC book rid=3 size=1
+RP BOOKC idx=1 type=blueprint shelf=1 rid=4 label=BP-IN-BOOK
+RP on_gui_closed tick=15780 p=1 fields: gui_type=9 ; record={type=blueprint-book name=blueprint-book shelf_index=1 record_id=3 valid_for_write=false label=BOOK-1}
+RP    opened=nil opened_gui_type=9
+RP intoBook game.blueprints n=0
+RP intoBook player 1 blueprints n=4
+RP   P1[2] type=blueprint-book name=blueprint-book shelf_index=1 record_id=3 valid_for_write=false label=BOOK-1
+RP   cursor_record=type=blueprint-book name=blueprint-book shelf_index=1 record_id=3 valid_for_write=false label=BOOK-1
+RP on_gui_opened tick=17114 p=1 fields: gui_type=9 ; record={type=blueprint-book name=blueprint-book shelf_index=1 record_id=3 valid_for_write=false label=BOOK-1}
+RP    opened=LuaRecord opened_gui_type=9 [type=blueprint-book name=blueprint-book shelf_index=1 record_id=3 valid_for_write=false label=BOOK-1]
+RP BOOKC book rid=3 size=2
+RP BOOKC idx=2 type=blueprint shelf=1 rid=2 label=BP-C
+RP inBook game.blueprints n=0
+RP inBook player 1 blueprints n=3
+RP   P1[1] type=blueprint-book name=blueprint-book shelf_index=1 record_id=3 valid_for_write=false label=BOOK-1
+RP   P1[2] type=blueprint name=blueprint shelf_index=1 record_id=1 valid_for_write=false label=BP-A2 setup=true nent=1
+RP   P1[3] type=blueprint name=blueprint shelf_index=1 record_id=0 valid_for_write=false label=BP-B setup=true nent=1
+Info BlueprintShelf.cpp:723: Saving blueprint storage.
+RP on_gui_closed tick=18181 p=1 fields: gui_type=9 ; record={type=blueprint-book name=blueprint-book shelf_index=1 record_id=3 valid_for_write=false label=BOOK-1}
+RP    opened=nil opened_gui_type=9
+RP toInv game.blueprints n=0
+RP toInv player 1 blueprints n=2
+RP readd game.blueprints n=0
+RP readd player 1 blueprints n=3
+RP   P1[3] type=blueprint name=blueprint shelf_index=1 record_id=5 valid_for_write=false label=BP-B setup=true nent=1
+RP DUP export len=213
+RP DUP imported label=BP-B
+RP dupe game.blueprints n=0
+RP dupe player 1 blueprints n=4
+RP   P1[4] type=blueprint name=blueprint shelf_index=1 record_id=6 valid_for_write=false label=BP-B setup=true nent=1
+RP game1 game.blueprints n=1
+RP   G[1] type=blueprint name=blueprint shelf_index=65536 record_id=0 valid_for_write=true label=BP-B setup=true nent=1
+RP game1 player 1 blueprints n=4
+RP on_gui_opened tick=21790 p=1 fields: gui_type=9 ; record={type=blueprint name=blueprint shelf_index=65536 record_id=0 valid_for_write=true label=BP-B setup=true nent=1}
+RP    opened=LuaRecord opened_gui_type=9 [type=blueprint name=blueprint shelf_index=65536 record_id=0 valid_for_write=true label=BP-B setup=true nent=1]
+RP on_gui_closed tick=21910 p=1 fields: gui_type=9 ; record={type=blueprint name=blueprint shelf_index=65536 record_id=0 valid_for_write=true label=BP-B setup=true nent=1}
+RP    opened=nil opened_gui_type=9
+RP GEDIT rid=0 shelf=65536 nent=2
+RP GEDIT cleared setup=false rid=0 valid=true
+RP gedit game.blueprints n=1
+RP   G[1] type=blueprint name=blueprint shelf_index=65536 record_id=0 valid_for_write=true label=GAME-EDITED setup=false nent=0
+RP gedit player 1 blueprints n=4
+RP on_gui_closed tick=23061 p=1 fields: gui_type=9
+RP    opened=nil opened_gui_type=0
+RP on_gui_opened tick=23473 p=1 fields: gui_type=3
+RP    opened=nil opened_gui_type=3
+RP on_gui_opened tick=23956 p=1 fields: gui_type=5 ; item=item:blueprint label=BP-B
+RP    opened=LuaItemStack opened_gui_type=5
+RP on_gui_closed tick=24118 p=1 fields: gui_type=5 ; item=item:blueprint label=BP-B
+RP    opened=nil opened_gui_type=3
+RP on_gui_closed tick=25266 p=1 fields: gui_type=3
+RP    opened=nil opened_gui_type=0
+
+## The same save loaded again in the same write-data, 2.1.25
+RP on_load ran
+RP afterload tick=25321 game.blueprints n=1
+RP   G[1] type=blueprint name=blueprint shelf_index=65536 record_id=0 valid_for_write=true label=GAME-EDITED setup=false nent=0
+RP afterload tick=25321 player 1 blueprints n=4
+RP   P1[1] type=blueprint-book name=blueprint-book shelf_index=1 record_id=3 valid_for_write=false label=BOOK-1 contents=1:1/4/BP-IN-BOOK,2:1/2/BP-C
+RP   P1[2] type=blueprint name=blueprint shelf_index=1 record_id=1 valid_for_write=false label=BP-A2 setup=true nent=1
+RP   P1[3] type=blueprint name=blueprint shelf_index=1 record_id=5 valid_for_write=false label=BP-B setup=true nent=1
+RP   P1[4] type=blueprint name=blueprint shelf_index=1 record_id=6 valid_for_write=false label=BP-B setup=true nent=1
+RP   cursor_record=nil
+RP on_gui_opened tick=26049 p=1 fields: gui_type=9
+RP    opened=nil opened_gui_type=9
+RP postload-add game.blueprints n=1
+RP postload-add player 1 blueprints n=5
+RP   P1[5] type=blueprint name=blueprint shelf_index=1 record_id=7 valid_for_write=false label=BP-B setup=true nent=1
+RP postload-add game.blueprints n=1
+RP postload-add player 1 blueprints n=5
+RP on_gui_opened tick=27114 p=1 fields: gui_type=9 ; record={type=blueprint-book name=blueprint-book shelf_index=1 record_id=3 valid_for_write=false label=BOOK-1 contents=1:1/4/BP-IN-BOOK,2:1/2/BP-C}
+RP    opened=LuaRecord opened_gui_type=9 [type=blueprint-book name=blueprint-book shelf_index=1 record_id=3 valid_for_write=false label=BOOK-1 contents=1:1/4/BP-IN-BOOK,2:1/2/BP-C]
+RP on_gui_closed tick=27365 p=1 fields: gui_type=9 ; record={type=blueprint-book name=blueprint-book shelf_index=1 record_id=3 valid_for_write=false label=BOOK-1 contents=1:1/4/BP-IN-BOOK,2:1/2/BP-C}
+RP    opened=nil opened_gui_type=9
+RP on_gui_closed tick=27457 p=1 fields: gui_type=9
+RP    opened=nil opened_gui_type=0
+RP on_gui_opened tick=27809 p=1 fields: gui_type=9
+RP    opened=nil opened_gui_type=9
+RP on_gui_opened tick=28327 p=1 fields: gui_type=9 ; record={type=blueprint-book name=blueprint-book shelf_index=1 record_id=3 valid_for_write=false label=BOOK-1 contents=1:1/4/BP-IN-BOOK,2:1/2/BP-C}
+RP    opened=LuaRecord opened_gui_type=9 [type=blueprint-book name=blueprint-book shelf_index=1 record_id=3 valid_for_write=false label=BOOK-1 contents=1:1/4/BP-IN-BOOK,2:1/2/BP-C]
+RP on_gui_opened tick=28713 p=1 fields: gui_type=9 ; record={type=blueprint name=blueprint shelf_index=1 record_id=2 valid_for_write=false label=BP-C setup=true nent=1}
+RP    opened=LuaRecord opened_gui_type=9 [type=blueprint name=blueprint shelf_index=1 record_id=2 valid_for_write=false label=BP-C setup=true nent=1]
+RP on_gui_closed tick=28833 p=1 fields: gui_type=9 ; record={type=blueprint name=blueprint shelf_index=1 record_id=2 valid_for_write=false label=BP-C setup=true nent=1}
+RP    opened=LuaRecord opened_gui_type=9 [type=blueprint-book name=blueprint-book shelf_index=1 record_id=3 valid_for_write=false label=BOOK-1 contents=1:1/4/BP-IN-BOOK,2:1/2/BP-C]
+RP on_gui_closed tick=28924 p=1 fields: gui_type=9 ; record={type=blueprint-book name=blueprint-book shelf_index=1 record_id=3 valid_for_write=false label=BOOK-1 contents=1:1/4/BP-IN-BOOK,2:1/2/BP-C}
+RP    opened=nil opened_gui_type=9
+RP on_gui_closed tick=29017 p=1 fields: gui_type=9
+RP    opened=nil opened_gui_type=0
+Info BlueprintShelf.cpp:723: Saving blueprint storage.
+
+## A new world, headless, write-data seeded with that client's blueprint-storage-2.dat, 2.1.25
+RP t30 game.blueprints n=0
+RP t30 player 1 blueprints n=5
+RP   P1[1] type=blueprint-book name=blueprint-book shelf_index=1 record_id=3 valid_for_write=false label=BOOK-1 contents=1:1/4/BP-IN-BOOK,2:1/2/BP-C
+RP   P1[2] type=blueprint name=blueprint shelf_index=1 record_id=1 valid_for_write=false label=BP-A2 setup=true nent=1
+RP   P1[3] type=blueprint name=blueprint shelf_index=1 record_id=5 valid_for_write=false label=BP-B setup=true nent=1
+RP   P1[4] type=blueprint name=blueprint shelf_index=1 record_id=6 valid_for_write=false label=BP-B setup=true nent=1
+RP   P1[5] type=blueprint name=blueprint shelf_index=1 record_id=7 valid_for_write=false label=BP-B setup=true nent=1
+
+## Multiplayer, 2.1.25: the server's log (the client's own library holds the five records above)
+RP joined p=1 is_mp=true
+RP joined game.blueprints n=0
+RP joined player 1 blueprints n=0
+RP on_gui_opened tick=1828 p=1 fields: gui_type=9
+RP    opened=nil opened_gui_type=9
+RP on_gui_opened tick=2274 p=1 fields: gui_type=9 ; record={type=blueprint name=blueprint shelf_index=1 record_id=1 valid_for_write=false label=BP-A2 setup=ERR:BlueprintRecord cannot be read while it is a preview. nent=ERR:BlueprintRecord cannot be read while it is a preview.}
+RP    opened=LuaRecord opened_gui_type=9 [type=blueprint name=blueprint shelf_index=1 record_id=1 valid_for_write=false label=BP-A2 setup=ERR:BlueprintRecord cannot be read while it is a preview. nent=ERR:BlueprintRecord cannot be read while it is a preview.]
+RP on_gui_closed tick=2454 p=1 fields: gui_type=9 ; record={type=blueprint name=blueprint shelf_index=1 record_id=1 valid_for_write=false label=BP-A2 setup=true nent=1}
+RP    opened=nil opened_gui_type=9
+
+## Client session, Factorio 2.1.23 (build 87750): a new library with one record
+Warning BlueprintShelf.cpp:659: Loading local blueprint storage failed: Map version 2.1.25-10 cannot be loaded because it is higher than the game version (2.1.23-2).
+RP on_gui_opened tick=835 p=1 fields: gui_type=9
+RP    opened=nil opened_gui_type=9
+RP on_gui_closed tick=1300 p=1 fields: gui_type=9
+RP    opened=nil opened_gui_type=0
+RP on_gui_opened tick=1665 p=1 fields: gui_type=9
+RP    opened=nil opened_gui_type=9
+RP on_gui_opened tick=2312 p=1 fields: gui_type=9
+RP    opened=nil opened_gui_type=9
+RP on_gui_closed tick=2493 p=1 fields: gui_type=9
+RP    opened=nil opened_gui_type=9
+RP p23 game.blueprints n=0
+RP p23 player 1 blueprints n=1
+RP   P1[1] type=blueprint name=ERR:LuaRecord doesn't contain key name. prototype=ERR:LuaRecord doesn't contain key prototype. shelf_index=ERR:LuaRecord doesn't contain key shelf_index. record_id=ERR:LuaRecord doesn't contain key record_id. valid_for_write=false label=BP-B setup=true nent=1
+RP p23 game.blueprints n=0
+RP p23 player 1 blueprints n=1

@@ -1,0 +1,107 @@
+SC scenario parsed
+SC s0-probe parsed
+SC sz-probe parsed
+SC T3 wired; cc=iron-plate 3 (set same tick as wiring)
+SC quiet tick=3 lamp_red=true lamp_green=true | cc_red=true | arith_in_red=true arith_in_green=true arith_out_red=true lamp3_red(on arith out)=true | chest_red=true pole_red=true | lamp2_red(unwired)=nil | furn_red=nil belt_red=nil lamp_combinator_in(bad id)=true
+SC quiet tick=4 lamp_red=true lamp_green=true | cc_red=true | arith_in_red=true arith_in_green=true arith_out_red=true lamp3_red(on arith out)=true | chest_red=true pole_red=true | lamp2_red(unwired)=nil | furn_red=nil belt_red=nil lamp_combinator_in(bad id)=true
+SC quiet tick=5 lamp_red=false lamp_green=false | cc_red=false | arith_in_red=false arith_in_green=false arith_out_red=true lamp3_red(on arith out)=true | chest_red=false pole_red=false | lamp2_red(unwired)=nil | furn_red=nil belt_red=nil lamp_combinator_in(bad id)=false
+SC quiet tick=6 lamp_red=false lamp_green=false | cc_red=false | arith_in_red=false arith_in_green=false arith_out_red=false lamp3_red(on arith out)=false | chest_red=false pole_red=false | lamp2_red(unwired)=nil | furn_red=nil belt_red=nil lamp_combinator_in(bad id)=false
+SC quiet tick=7 lamp_red=false lamp_green=false | cc_red=false | arith_in_red=false arith_in_green=false arith_out_red=false lamp3_red(on arith out)=false | chest_red=false pole_red=false | lamp2_red(unwired)=nil | furn_red=nil belt_red=nil lamp_combinator_in(bad id)=false
+SC quiet tick=8 lamp_red=false lamp_green=false | cc_red=false | arith_in_red=false arith_in_green=false arith_out_red=false lamp3_red(on arith out)=false | chest_red=false pole_red=false | lamp2_red(unwired)=nil | furn_red=nil belt_red=nil lamp_combinator_in(bad id)=false
+SC quiet tick=9 lamp_red=false lamp_green=false | cc_red=false | arith_in_red=false arith_in_green=false arith_out_red=false lamp3_red(on arith out)=false | chest_red=false pole_red=false | lamp2_red(unwired)=nil | furn_red=nil belt_red=nil lamp_combinator_in(bad id)=false
+SC quiet tick=10 lamp_red=false lamp_green=false | cc_red=false | arith_in_red=false arith_in_green=false arith_out_red=false lamp3_red(on arith out)=false | chest_red=false pole_red=false | lamp2_red(unwired)=nil | furn_red=nil belt_red=nil lamp_combinator_in(bad id)=false
+SC s0-probe tick=19 lamp_red_changed=false
+SC val tick=19 lamp_red=false lamp_green=false | cc_red=false | arith_in_red=false arith_in_green=false arith_out_red=false lamp3_red(on arith out)=false | chest_red=false pole_red=false | lamp2_red(unwired)=nil | furn_red=nil belt_red=nil lamp_combinator_in(bad id)=false
+SC sz-probe tick=19 lamp_red_changed=false
+SC s0-probe tick=20 lamp_red_changed=false
+SC T20 changed value 3->9 BEFORE query
+SC val tick=20 lamp_red=false lamp_green=false | cc_red=false | arith_in_red=false arith_in_green=false arith_out_red=false lamp3_red(on arith out)=false | chest_red=false pole_red=false | lamp2_red(unwired)=nil | furn_red=nil belt_red=nil lamp_combinator_in(bad id)=false
+SC T20 twice-same-tick: false false then with tick arg 19: false arg 20: false
+SC sz-probe tick=20 lamp_red_changed=false
+SC s0-probe tick=21 lamp_red_changed=true
+SC val tick=21 lamp_red=true lamp_green=false | cc_red=true | arith_in_red=true arith_in_green=false arith_out_red=false lamp3_red(on arith out)=false | chest_red=false pole_red=false | lamp2_red(unwired)=nil | furn_red=nil belt_red=nil lamp_combinator_in(bad id)=true
+SC sz-probe tick=21 lamp_red_changed=true
+SC s0-probe tick=22 lamp_red_changed=false
+SC val tick=22 lamp_red=false lamp_green=false | cc_red=false | arith_in_red=false arith_in_green=false arith_out_red=true lamp3_red(on arith out)=true | chest_red=false pole_red=false | lamp2_red(unwired)=nil | furn_red=nil belt_red=nil lamp_combinator_in(bad id)=false
+SC sz-probe tick=22 lamp_red_changed=false
+SC s0-probe tick=23 lamp_red_changed=false
+SC val tick=23 lamp_red=false lamp_green=false | cc_red=false | arith_in_red=false arith_in_green=false arith_out_red=false lamp3_red(on arith out)=false | chest_red=false pole_red=false | lamp2_red(unwired)=nil | furn_red=nil belt_red=nil lamp_combinator_in(bad id)=false
+SC sz-probe tick=23 lamp_red_changed=false
+SC s0-probe tick=24 lamp_red_changed=false
+SC val tick=24 lamp_red=false lamp_green=false | cc_red=false | arith_in_red=false arith_in_green=false arith_out_red=false lamp3_red(on arith out)=false | chest_red=false pole_red=false | lamp2_red(unwired)=nil | furn_red=nil belt_red=nil lamp_combinator_in(bad id)=false
+SC T24 lamp3 signals={{count = 18, signal = {name = "iron-plate"}}} arith cb params={first_signal = {name = "iron-plate"}, first_signal_networks = {green = true, red = true}, operation = "*", output_signal = {name = "iron-plate"}, second_constant = 2, second_signal_networks = {green = true, red = true}}
+SC sz-probe tick=24 lamp_red_changed=false
+SC type tick=39 lamp_red=false lamp_green=false | cc_red=false | arith_in_red=false arith_in_green=false arith_out_red=false lamp3_red(on arith out)=false | chest_red=false pole_red=false | lamp2_red(unwired)=nil | furn_red=nil belt_red=nil lamp_combinator_in(bad id)=false
+SC s0-probe tick=40 lamp_red_changed=false
+SC T40 changed type iron->copper same count
+SC type tick=40 lamp_red=false lamp_green=false | cc_red=false | arith_in_red=false arith_in_green=false arith_out_red=false lamp3_red(on arith out)=false | chest_red=false pole_red=false | lamp2_red(unwired)=nil | furn_red=nil belt_red=nil lamp_combinator_in(bad id)=false
+SC sz-probe tick=40 lamp_red_changed=false
+SC s0-probe tick=41 lamp_red_changed=true
+SC type tick=41 lamp_red=true lamp_green=false | cc_red=true | arith_in_red=true arith_in_green=false arith_out_red=false lamp3_red(on arith out)=false | chest_red=false pole_red=false | lamp2_red(unwired)=nil | furn_red=nil belt_red=nil lamp_combinator_in(bad id)=true
+SC sz-probe tick=41 lamp_red_changed=true
+SC s0-probe tick=42 lamp_red_changed=false
+SC type tick=42 lamp_red=false lamp_green=false | cc_red=false | arith_in_red=false arith_in_green=false arith_out_red=true lamp3_red(on arith out)=true | chest_red=false pole_red=false | lamp2_red(unwired)=nil | furn_red=nil belt_red=nil lamp_combinator_in(bad id)=false
+SC sz-probe tick=42 lamp_red_changed=false
+SC type tick=43 lamp_red=false lamp_green=false | cc_red=false | arith_in_red=false arith_in_green=false arith_out_red=false lamp3_red(on arith out)=false | chest_red=false pole_red=false | lamp2_red(unwired)=nil | furn_red=nil belt_red=nil lamp_combinator_in(bad id)=false
+SC type tick=44 lamp_red=false lamp_green=false | cc_red=false | arith_in_red=false arith_in_green=false arith_out_red=false lamp3_red(on arith out)=false | chest_red=false pole_red=false | lamp2_red(unwired)=nil | furn_red=nil belt_red=nil lamp_combinator_in(bad id)=false
+SC chest tick=49 lamp_red=false lamp_green=false | cc_red=false | arith_in_red=false arith_in_green=false arith_out_red=false lamp3_red(on arith out)=false | chest_red=false pole_red=false | lamp2_red(unwired)=nil | furn_red=nil belt_red=nil lamp_combinator_in(bad id)=false
+SC T50 chest insert coal 10
+SC chest tick=50 lamp_red=false lamp_green=false | cc_red=false | arith_in_red=false arith_in_green=false arith_out_red=false lamp3_red(on arith out)=false | chest_red=false pole_red=false | lamp2_red(unwired)=nil | furn_red=nil belt_red=nil lamp_combinator_in(bad id)=false
+SC chest tick=51 lamp_red=false lamp_green=false | cc_red=false | arith_in_red=false arith_in_green=false arith_out_red=false lamp3_red(on arith out)=false | chest_red=true pole_red=true | lamp2_red(unwired)=nil | furn_red=nil belt_red=nil lamp_combinator_in(bad id)=false
+SC chest tick=52 lamp_red=false lamp_green=false | cc_red=false | arith_in_red=false arith_in_green=false arith_out_red=false lamp3_red(on arith out)=false | chest_red=false pole_red=false | lamp2_red(unwired)=nil | furn_red=nil belt_red=nil lamp_combinator_in(bad id)=false
+SC chest tick=53 lamp_red=false lamp_green=false | cc_red=false | arith_in_red=false arith_in_green=false arith_out_red=false lamp3_red(on arith out)=false | chest_red=false pole_red=false | lamp2_red(unwired)=nil | furn_red=nil belt_red=nil lamp_combinator_in(bad id)=false
+SC chest tick=54 lamp_red=false lamp_green=false | cc_red=false | arith_in_red=false arith_in_green=false arith_out_red=false lamp3_red(on arith out)=false | chest_red=false pole_red=false | lamp2_red(unwired)=nil | furn_red=nil belt_red=nil lamp_combinator_in(bad id)=false
+SC s0-probe POLL60 tick=60 arg_last=0 -> true (no-arg false)
+SC T60 baseline poll no-arg=false
+SC base60 tick=60 lamp_red=false lamp_green=false | cc_red=false | arith_in_red=false arith_in_green=false arith_out_red=false lamp3_red(on arith out)=false | chest_red=false pole_red=false | lamp2_red(unwired)=nil | furn_red=nil belt_red=nil lamp_combinator_in(bad id)=false
+SC sz-probe POLL60 tick=60 arg_last=0 -> true (no-arg false)
+SC T70 value 9->77
+SC T75 value back to 9
+SC s0-probe POLL60 tick=120 arg_last=60 -> true (no-arg false)
+SC T120 poll (no arg)=false  poll(arg=60)=true  poll(arg=76)=false  poll(arg=70)=true poll(arg=75)=true poll(arg=74)=true
+SC T120 value now={{count = 9, signal = {name = "copper-plate"}}}
+SC sz-probe POLL60 tick=120 arg_last=60 -> true (no-arg false)
+SC s0-probe tick=139 lamp_red_changed=false
+SC unwire tick=139 lamp_red=false lamp_green=false | cc_red=false | arith_in_red=false arith_in_green=false arith_out_red=false lamp3_red(on arith out)=false | chest_red=false pole_red=false | lamp2_red(unwired)=nil | furn_red=nil belt_red=nil lamp_combinator_in(bad id)=false
+SC sz-probe tick=139 lamp_red_changed=false
+SC s0-probe tick=140 lamp_red_changed=false
+SC T140 disconnected cc-lamp
+SC unwire tick=140 lamp_red=true lamp_green=true | cc_red=true | arith_in_red=true arith_in_green=false arith_out_red=false lamp3_red(on arith out)=false | chest_red=false pole_red=false | lamp2_red(unwired)=nil | furn_red=nil belt_red=nil lamp_combinator_in(bad id)=true
+SC sz-probe tick=140 lamp_red_changed=true
+SC s0-probe tick=141 lamp_red_changed=true
+SC unwire tick=141 lamp_red=true lamp_green=true | cc_red=true | arith_in_red=true arith_in_green=false arith_out_red=false lamp3_red(on arith out)=false | chest_red=false pole_red=false | lamp2_red(unwired)=nil | furn_red=nil belt_red=nil lamp_combinator_in(bad id)=true
+SC sz-probe tick=141 lamp_red_changed=true
+SC s0-probe tick=142 lamp_red_changed=false
+SC unwire tick=142 lamp_red=false lamp_green=false | cc_red=false | arith_in_red=false arith_in_green=false arith_out_red=false lamp3_red(on arith out)=false | chest_red=false pole_red=false | lamp2_red(unwired)=nil | furn_red=nil belt_red=nil lamp_combinator_in(bad id)=false
+SC sz-probe tick=142 lamp_red_changed=false
+SC unwire tick=143 lamp_red=false lamp_green=false | cc_red=false | arith_in_red=false arith_in_green=false arith_out_red=false lamp3_red(on arith out)=false | chest_red=false pole_red=false | lamp2_red(unwired)=nil | furn_red=nil belt_red=nil lamp_combinator_in(bad id)=false
+SC rewire tick=149 lamp_red=false lamp_green=false | cc_red=false | arith_in_red=false arith_in_green=false arith_out_red=false lamp3_red(on arith out)=false | chest_red=false pole_red=false | lamp2_red(unwired)=nil | furn_red=nil belt_red=nil lamp_combinator_in(bad id)=false
+SC T150 reconnected
+SC rewire tick=150 lamp_red=true lamp_green=true | cc_red=true | arith_in_red=false arith_in_green=false arith_out_red=false lamp3_red(on arith out)=false | chest_red=false pole_red=false | lamp2_red(unwired)=nil | furn_red=nil belt_red=nil lamp_combinator_in(bad id)=true
+SC rewire tick=151 lamp_red=true lamp_green=true | cc_red=true | arith_in_red=false arith_in_green=false arith_out_red=false lamp3_red(on arith out)=false | chest_red=false pole_red=false | lamp2_red(unwired)=nil | furn_red=nil belt_red=nil lamp_combinator_in(bad id)=true
+SC rewire tick=152 lamp_red=false lamp_green=false | cc_red=false | arith_in_red=false arith_in_green=false arith_out_red=false lamp3_red(on arith out)=false | chest_red=false pole_red=false | lamp2_red(unwired)=nil | furn_red=nil belt_red=nil lamp_combinator_in(bad id)=false
+SC rewire tick=153 lamp_red=false lamp_green=false | cc_red=false | arith_in_red=false arith_in_green=false arith_out_red=false lamp3_red(on arith out)=false | chest_red=false pole_red=false | lamp2_red(unwired)=nil | furn_red=nil belt_red=nil lamp_combinator_in(bad id)=false
+SC T158 lamp2 (never wired) before create connector: nil
+SC T158 lamp2 after get_wire_connector(create=true): false
+SC T158 id values: circuit_red=1 circuit_green=2 comb_in_red=1 comb_out_red=3 pole_copper=5
+SC T158 pole.get_signals_changed(pole_copper)=nil lamp.get_signals_changed(pole_copper)=nil
+SC T160 arg=-5 -> ERR Given MapTick value -5 is outside of valid range. Allowed values are from 0 to 4503599627370496, or inf.
+SC T160 arg=99999 (future) -> false
+SC T160 arg=0 -> true
+SC T170 big network: items=253 signals=0
+SC T172 signals on the big network=253
+SC T172 COST x2000 get_signals: Duration: 207.118325ms
+SC COST x2000 get_signals_changed(no arg): Duration: 0.441426ms
+SC COST x2000 get_signals_changed(arg): Duration: 0.771417ms
+SC COST x2000 get_signal(single): Duration: 1.035398ms
+SC T175 big net changed; changed=false
+SC T176 big changed=true
+SC T177 big changed=false
+SC s0-probe POLL60 tick=180 arg_last=120 -> true (no-arg false)
+SC T180 chest cb type=1 read_empty_slots=false empty_slots_signal={name = "signal-E", type = "virtual"}
+SC   chest set read_empty_slots=true -> true signals={{count = 10, signal = {name = "coal"}}}
+SC   silo cb type=22 read_launched=false launched_signal={name = "signal-R", type = "virtual"}
+SC   selector cb type=20 params={index_constant = 0, operation = "select", select_max = true}
+SC   selector after set={index_comparator = ">", index_constant = 2, operation = "select", select_max = true}
+SC sz-probe POLL60 tick=180 arg_last=120 -> true (no-arg false)
+SC SC_DONE

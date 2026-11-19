@@ -1,0 +1,5 @@
+RP gui_type enum: achievement=8 alerts_config=25 blueprint_library=9 bonus=6 controller=3 custom=16 entity=1 equipment=10 global_electric_network=22 item=5 logistic=11 none=0 opened_entity_grid=24 other_player=12 permissions=14 player_management=18 production=4 script_inventory=23 server_management=17 tile=19 trains=7
+RP t30 game.blueprints n=0
+RP t30 player 1 blueprints n=0
+RP   cursor_record=nil
+RP DONE
