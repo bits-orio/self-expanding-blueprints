@@ -227,10 +227,15 @@ end
 -- The vanilla anchor at `point` (a grow-tool click, a stamp without an
 -- entry): where the player's own blueprint would land with the cursor
 -- there. Absolute snapping picks the world grid cell holding the point;
--- otherwise the footprint is centred on it.
+-- otherwise the whole blueprint, including markers, is centred on it.
+-- A socket or probe outside the buildable footprint moves the cursor
+-- preview's centre too. Keep footprint centring for edge attachments, but
+-- use the full reach here so the first copy lands where the preview did.
 function placement.anchor(prepared, point, direction)
   if prepared.absolute then return in_cell(prepared, point, direction, math.floor) end
-  return placement.centred_on(prepared, point, direction)
+  local reach = prepared.reach or prepared.bounds
+  local centre = geometry.box_center(placement.area(prepared, reach, { x = 0, y = 0 }, direction))
+  return on_lattice(prepared, { x = point.x - centre.x, y = point.y - centre.y })
 end
 
 -- The build position whose footprint starts at `corner`, rounded up onto the

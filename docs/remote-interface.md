@@ -24,9 +24,9 @@ Every argument is checked when the call arrives. A bad one returns `nil, "invali
 
 | Field | Meaning | Taken by |
 |---|---|---|
-| `position` | The design's entry arrow lands on the tile holding this point, facing `direction`. A design without an entry lands by its vanilla blueprint anchor: its footprint is centred on the point, or, for a blueprint with absolute snapping, it takes the world grid cell holding the point. | both |
+| `position` | The design's entry arrow lands on the tile holding this point, facing `direction`. A design without an entry lands by its vanilla blueprint anchor: the full blueprint, including markers, is centred on the point, or, for a blueprint with absolute snapping, it takes the world grid cell holding the point. | both |
 | `build_position` | The raw build position, used as given. It must be a whole-tile position, and an even one for designs with rails or other 2x2-grid entities, or the call returns `"off-grid"`. | both |
-| `point` | The first copy lands as the player's own blueprint would with the cursor there (as a click with the design in hand): its footprint is centred on this point, or, with absolute snapping, it takes the world grid cell holding the point. | `start_project` |
+| `point` | The first copy lands as the player's own blueprint would with the cursor there (as a click with the design in hand): the full blueprint, including markers, is centred on this point, or, with absolute snapping, it takes the world grid cell holding the point. | `start_project` |
 | `area` | Growth fills this area from its top-left corner and never leaves it (the window's Fill an area starts at the corner the drag started from instead); with absolute snapping, from the first placement on the blueprint's grid that fits. | `start_project` |
 
 ## Functions
