@@ -1,4 +1,13 @@
 ---------------------------------------------------------------------------------------------------
+Version: 0.2.13
+Date: 2026-11-18
+  Features:
+    - While you drag the area tool, the map shows where the first copy will go and how many copies the rectangle has room for. A rectangle too small for one copy turns red and names the size it needs.
+    - A design added from the blueprint library remembers its library entry (Factorio 2.1.25 and newer). Hold that entry again and the add button updates the same design, even after you edited the entry's label or renamed the design.
+    - When you close a library blueprint whose design holds an older version of it, chat tells you so and how to update the design.
+  Changes:
+    - Needs Factorio 2.1.22 or newer.
+---------------------------------------------------------------------------------------------------
 Version: 0.2.12
 Date: 2026-11-16
   Bugfixes:
